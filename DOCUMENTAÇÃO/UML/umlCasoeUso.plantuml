@@ -1,0 +1,54 @@
+@startuml
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam rectangle {
+  BackgroundColor<<Sprint>> LightBlue
+  BorderColor Black
+}
+
+package "Sprint 1 - Estrutura Básica e Cadastro" <<Sprint>> {
+  RF01 : Cadastro e gestão de clientes e eventos
+  RNF01 : Criptografia de dados sensíveis
+  RNF03 : Interface do administrador (inicial)
+}
+
+package "Sprint 2 - Módulo Financeiro" <<Sprint>> {
+  RF03 : Controle de orçamento e finanças
+  RF04 : Controle de pagamentos de clientes
+  RF05 : Controle de fornecedores
+  RNF02 : Permissões de acesso
+}
+
+package "Sprint 3 - Contratos e Arquivos" <<Sprint>> {
+  RF06 : Gerar contratos pré-prontos
+  RF07 : Anexar arquivos aos eventos
+  RNF03 : Interface do administrador (ajustes)
+  RNF04 : Usabilidade clientes/equipe
+}
+
+package "Sprint 4 - Convidados e QR Code" <<Sprint>> {
+  RF08 : Lista de convidados (CRUD e import/export)
+  RF09 : QR Code para check-in
+  RNF04 : Usabilidade clientes/equipe
+}
+
+package "Sprint 5 - Cronograma e Pendências" <<Sprint>> {
+  RF10 : Cronograma pré-evento (checklists)
+  RF11 : Cronograma do dia do evento
+  RF12 : Lista de pendências
+  RF13 : Notificações automáticas
+}
+
+package "Sprint 6 - Personalização, Relatórios e Apresentação" <<Sprint>> {
+  RF14 : Modelos e personalização de eventos/tarefas
+  RF15 : Relatórios de pendências e timeline
+  RF16 : Área do cliente (contagem regressiva e dados)
+  RF17 : Página pública (perfil, serviços, contato)
+  RF18 : Simulador de orçamento público
+  RNF06 : Backups automáticos
+  RNF10 : Performance em dispositivos móveis
+}
+
+@enduml
+
+

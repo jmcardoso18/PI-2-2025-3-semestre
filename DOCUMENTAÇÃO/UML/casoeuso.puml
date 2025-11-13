@@ -1,0 +1,22 @@
+@startuml
+
+left to right direction
+
+actor "Administrativo" as Adm
+actor "Cliente" as Cliente 
+actor "Equipe" as Equipe 
+
+rectangle "Sistema de Gestão" {
+    Adm --> (Gerenciar Usuários)
+    Adm --> (Gerenciar Serviços)
+    Adm --> (Gerenciar Equipe)
+    
+    Cliente --> (Solicitar Serviço)
+    Cliente --> (Avaliar Serviço)
+    
+    Equipe --> (Atualizar Status do Serviço)
+    Equipe --> (Visualizar Tarefas)
+}     
+
+
+@enduml

@@ -1,0 +1,31 @@
+@startmindmap
+* Sistema de Gerenciamento de Eventos para Cerimonialista
+** Página de Apresentação
+*** Perfil
+*** Serviços
+*** Contatos (link com WhatsApp)
+*** Simule seu orçamento
+** Perfil
+*** Equipe
+**** Lista de convidados / Cronograma do dia do evento
+*** Cliente
+**** Personalização
+**** Dados do evento (contagem regressiva)
+**** Lista de convidados (confirmação via QR Code / cliente confirma)
+**** Gestão de fornecedores (nome, valor e status)
+**** Cronograma pré-evento
+***** Calendário com lembretes de marcos
+***** Check list
+**** Cronograma do dia
+***** Check list
+**** Pendências
+***** Check list
+**** Update dos contratos
+***** Contrato da Karine é gerado pelo sistema
+** Administrativa
+*** Cadastrar Cliente / Evento
+*** Eventos
+**** Todos os dados que tem no cliente
+*** Módulo Financeiro
+*** Gerar relatórios
+@endmindmap

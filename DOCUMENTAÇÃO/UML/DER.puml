@@ -1,0 +1,143 @@
+
+@startuml db_cerimonial
+hide circle
+
+entity TB_USUARIOS {
+  *id : BIGINT <<PK>>
+  --
+  nome : VARCHAR
+  email : VARCHAR
+  senha_hash : VARCHAR
+  perfil : ENUM
+}
+
+entity TB_CLIENTES {
+  *id : BIGINT <<PK>>
+  --
+  usuario_id : BIGINT <<FK>>
+  nome : VARCHAR
+  telefone : VARCHAR
+  email : VARCHAR
+  data_cadastro : TIMESTAMP
+}
+
+entity TB_EVENTOS {
+  *id : BIGINT <<PK>>
+  --
+  cliente_id : BIGINT <<FK>>
+  tipo : ENUM
+  nome_evento : VARCHAR
+  data_evento : DATE
+  local_evento : VARCHAR
+  tema : VARCHAR
+  status : ENUM
+}
+
+entity TB_FINANCEIRO {
+  *id : BIGINT <<PK>>
+  --
+  evento_id : BIGINT <<FK>>
+  tipo : ENUM
+  descricao : VARCHAR
+  valor : DECIMAL
+  data_registro : DATE
+}
+
+entity TB_PAGAMENTOS {
+  *id : BIGINT <<PK>>
+  --
+  evento_id : BIGINT <<FK>>
+  descricao : VARCHAR
+  valor : DECIMAL
+  data_vencimento : DATE
+  data_pagamento : DATE
+  status : ENUM
+}
+
+entity TB_FORNECEDORES {
+  *id : BIGINT <<PK>>
+  --
+  evento_id : BIGINT <<FK>>
+  nome : VARCHAR
+  servico : VARCHAR
+  valor : DECIMAL
+  status : ENUM
+  contato : VARCHAR
+}
+
+entity TB_CONTRATOS {
+  *id : BIGINT <<PK>>
+  --
+  evento_id : BIGINT <<FK>>
+  nome_arquivo : VARCHAR
+  data_geracao : TIMESTAMP
+  caminho_arquivo : VARCHAR
+}
+
+entity TB_ARQUIVOS {
+  *id : BIGINT <<PK>>
+  --
+  evento_id : BIGINT <<FK>>
+  tipo : ENUM
+  nome_arquivo : VARCHAR
+  caminho_arquivo : VARCHAR
+  data_upload : TIMESTAMP
+}
+
+entity TB_CONVIDADOS {
+  *id : BIGINT <<PK>>
+  --
+  evento_id : BIGINT <<FK>>
+  nome : VARCHAR
+  email : VARCHAR
+  telefone : VARCHAR
+  codigo_qr : VARCHAR
+  confirmado : BOOLEAN
+}
+
+entity TB_CRONOGRAMAS {
+  *id : BIGINT <<PK>>
+  --
+  evento_id : BIGINT <<FK>>
+  tipo : ENUM
+  titulo : VARCHAR
+  data_inicio : DATETIME
+  data_fim : DATETIME
+}
+
+entity TB_TAREFAS {
+  *id : BIGINT <<PK>>
+  --
+  cronograma_id : BIGINT <<FK>>
+  evento_id : BIGINT <<FK>>
+  descricao : VARCHAR
+  data_limite : DATE
+  status : ENUM
+}
+
+entity TB_NOTIFICACOES {
+  *id : BIGINT <<PK>>
+  --
+  cliente_id : BIGINT <<FK>>
+  evento_id : BIGINT <<FK>>
+  mensagem : TEXT
+  canal : ENUM
+  data_envio : TIMESTAMP
+}
+
+'TB_USUARIOS' ||--o{ 'TB_CLIENTES' : "cria"
+'TB_CLIENTES' ||--o{ 'TB_EVENTOS' : "possui"
+'TB_EVENTOS' ||--o{ 'TB_FINANCEIRO' : "registra"
+'TB_EVENTOS' ||--o{ 'TB_PAGAMENTOS' : "tem"
+'TB_EVENTOS' ||--o{ 'TB_FORNECEDORES' : "contrata"
+'TB_EVENTOS' ||--o{ 'TB_CONTRATOS' : "gera"
+'TB_EVENTOS' ||--o{ 'TB_ARQUIVOS' : "anexa"
+'TB_EVENTOS' ||--o{ 'TB_CONVIDADOS' : "convida"
+'TB_EVENTOS' ||--o{ 'TB_CRONOGRAMAS' : "planeja"
+'TB_CRONOGRAMAS' ||--o{ 'TB_TAREFAS' : "contém"
+'TB_EVENTOS' ||--o{ 'TB_TAREFAS' : "relaciona"
+'TB_CLIENTES' ||--o{ 'TB_NOTIFICACOES' : "recebe"
+'TB_EVENTOS' ||--o{ 'TB_NOTIFICACOES' : "relaciona"
+
+@enduml
+```

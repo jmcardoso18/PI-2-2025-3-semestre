@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Eventos</title>
+</head>
+<body>
+    <h1>Meus Eventos</h1>
+
+    <ul>
+        {% for evento in eventos %}
+            
+            <li style="border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 10px;">
+                <strong>{{ evento.nome }}</strong>
+                <br>
+                Data: {{ evento.data|date:"d/m/Y" }} <br>
+                Local: {{ evento.local }}
+            </li>
+
+        {% empty %}
+            <li>Nenhum evento cadastrado ainda.</li>
+        {% endfor %}
+    </ul>
+
+</body>
+</html>
