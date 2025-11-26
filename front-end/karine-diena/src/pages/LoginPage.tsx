@@ -1,44 +1,125 @@
+import { useState } from "react";
 import Navbar from "../componentes/Navbar";
 import Footer from "../componentes/Footer";
+import hero from "../assets/images/hero.jpg"; // <--- Importando a imagem
 
 export default function LoginPage() {
+    // Estados para guardar o que o usuário digita
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [erro, setErro] = useState("");
+
+    // Função que acontece quando clica em "Entrar"
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault(); // Evita recarregar a página
+        setErro(""); // Limpa erros antigos
+
+        try {
+            const response = await fetch("http://127.0.0.1:8000/api/token/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // SUCESSO!
+                console.log("Token recebido:", data.access);
+                alert("Login realizado com sucesso! (Veja o token no console)");
+                
+                // Salvar o token para usar depois
+                localStorage.setItem("token", data.access);
+                
+                // AQUI VOCÊ DECIDE O QUE FAZER:
+                // Opção A: Redirecionar para um Dashboard do React
+                // window.location.href = "/dashboard"; 
+                
+                // Opção B: Se a ideia é ir para o Django Admin (Jazzmin):
+                window.location.href = "http://127.0.0.1:8000/admin/";
+            } else {
+                // ERRO (Senha errada)
+                setErro("Usuário ou senha inválidos.");
+            }
+        } catch (error) {
+            setErro("Erro ao conectar com o servidor.");
+            console.error(error);
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-neutral-950 text-white">
-            {/* NAVBAR FIXO NO TOPO */}
-            <Navbar />
+        // Container principal com a imagem de fundo (igual à Home)
+        <div className="min-h-screen relative flex flex-col text-white">
+            
+            {/* Imagem de Fundo Fixa */}
+            <div className="absolute inset-0 z-0">
+                <div 
+                    className="h-full w-full bg-cover bg-center brightness-50"
+                    style={{ backgroundImage: `url(${hero})` }}
+                />
+            </div>
+            {/* Overlay preto para garantir leitura */}
+            <div className="absolute inset-0 bg-black/40 z-[1]" />
 
-            {/* MAIN  */}
-            <main className="min-h-screen flex items-center justify-center pt-24 pb-16">
-                <form className="w-full max-w-sm space-y-4 bg-black/40 p-8 rounded-xl border border-white/10">
-                    <h2 className="text-xl font-semibold mb-2">Login</h2>
+            {/* Conteúdo (Navbar e Form) fica acima do fundo (z-10) */}
+            <div className="relative z-10 flex flex-col min-h-screen">
+                
+                <Navbar />
 
-                    <div>
-                        <label className="block text-xs mb-1">E-mail</label>
-                        <input
-                            type="email"
-                            className="w-full rounded-md border border-white/20 bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-white"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-xs mb-1">Senha</label>
-                        <input
-                            type="password"
-                            className="w-full rounded-md border border-white/20 bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-white"
-                        />
-                    </div>
-
-                    <button
-                        type="submit"
-                        className="mt-2 w-full bg-white text-black py-2 rounded-md text-sm font-medium"
+                <main className="flex-grow flex items-center justify-center pt-24 pb-16 px-4">
+                    <form 
+                        onSubmit={handleLogin}
+                        className="w-full max-w-sm space-y-6 bg-black/60 backdrop-blur-md p-8 rounded-xl border border-white/20 shadow-2xl"
                     >
-                        Entrar
-                    </button>
-                </form>
-            </main>
+                        <div className="text-center">
+                            <h2 className="text-2xl font-display font-semibold mb-1">Bem-vindo</h2>
+                            <p className="text-sm text-white/70">Acesse sua conta para continuar</p>
+                        </div>
 
-            {/* FOOTER  */}
-            <Footer />
+                        {erro && (
+                            <div className="bg-red-500/20 border border-red-500 text-red-200 text-xs p-3 rounded text-center">
+                                {erro}
+                            </div>
+                        )}
+
+                        <div>
+                            <label className="block text-xs uppercase tracking-wider text-white/80 mb-2">Usuário</label>
+                            <input
+                                type="text"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                className="w-full rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-sm focus:outline-none focus:border-brand-500 focus:bg-white/10 transition-all"
+                                placeholder="Digite seu usuário"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs uppercase tracking-wider text-white/80 mb-2">Senha</label>
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-sm focus:outline-none focus:border-brand-500 focus:bg-white/10 transition-all"
+                                placeholder="••••••••"
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="w-full bg-white text-black py-3 rounded-full text-sm font-bold hover:bg-neutral-200 hover:scale-[1.02] transition-all duration-200 shadow-lg mt-4"
+                        >
+                            ENTRAR
+                        </button>
+                    </form>
+                </main>
+
+                <Footer />
+            </div>
         </div>
     );
 }

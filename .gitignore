@@ -24,7 +24,7 @@ dist-ssr
 *.sw?
 
 # --- Python / Django ---
-__pycache__/
+/__pycache__
 *.pyc
 *.pyo
 *.pyd
@@ -33,4 +33,4 @@ db.sqlite3
 venv/
 .venv/
 env/
-
+/venv
