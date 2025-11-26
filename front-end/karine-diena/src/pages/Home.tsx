@@ -158,7 +158,7 @@ const Home = () => {
 
             {/* SERVIÇOS */}
             <section
-                id="servicos"
+                id="services"
                 className="bg-[#f9f5ea] text-black py-20 px-4 relative"
             >
                 <div className="grid gap-8 md:grid-cols-3">
