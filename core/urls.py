@@ -1,21 +1,11 @@
 from django.urls import path
-from .views import EventoListView 
-from django.contrib.auth.views import LoginView
-from core.views import api_home
-from .views import lista_servicos 
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from .views import lista_servicos, login_react_session, dashboard
 
 urlpatterns = [
-    path('eventos/', EventoListView.as_view(), name='lista_eventos'),
-
-    path('login/', 
-         LoginView.as_view(template_name='core/login.html'), 
-         name='login'),
-
-    path('api/teste/', api_home, name='api_teste'),
-
+    # --- APIs para o Front-end (React) ---
     path('api/servicos/', lista_servicos, name='api_servicos'),
+    path('api/login-session/', login_react_session, name='login_session'),
 
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    # --- Área do Cliente (Django Templates) ---
+    path('dashboard/', dashboard, name='dashboard'),
 ]
