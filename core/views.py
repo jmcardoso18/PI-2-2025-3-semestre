@@ -1,39 +1,58 @@
+import json
 from django.shortcuts import render
-from django.views.generic import ListView
-from .models import Evento
 from django.http import JsonResponse
-from .models import Servico
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 
-# Create your views here.
+from .models import Evento, Servico
 
-class EventoListView(ListView):
-    model = Evento
-    
-    # O nome do arquivo HTML que vamos criar na Etapa 3
-    template_name = 'core/lista_eventos.html'
-    
-    # O nome da variável que usaremos no HTML (ex: 'for evento in eventos')
-    context_object_name = 'eventos'
-
-def api_home(request):
-    dados = {
-        "mensagem": "Olá, React! Eu sou o Django.",
-        "usuario": "Felipe",
-        "status": "Conectado"
-    }
-    return JsonResponse(dados)
-
-# View para a página inicial (se você usar templates do Django)
-def home(request):
-    return render(request, 'index.html') # ou o nome do seu template
-
-# --- API PARA O REACT ---
+# -------------------------------------------------------------------
+# API: Serviços (Para o Home do React)
+# -------------------------------------------------------------------
 def lista_servicos(request):
-    # Pega todos os serviços do banco
     servicos = Servico.objects.all().values('id', 'titulo', 'descricao', 'preco')
-    
-    # Transforma em lista Python
-    dados = list(servicos)
-    
-    # Retorna como JSON
-    return JsonResponse(dados, safe=False)
+    return JsonResponse(list(servicos), safe=False)
+
+# -------------------------------------------------------------------
+# API: Login (Cria sessão para o Dashboard)
+# -------------------------------------------------------------------
+@csrf_exempt 
+def login_react_session(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            user = authenticate(
+                request, 
+                username=data.get('username'), 
+                password=data.get('password')
+            )
+            
+            if user is not None:
+                login(request, user) # Cria o cookie de sessão
+                return JsonResponse({'message': 'Sucesso', 'redirect': '/dashboard/'})
+            else:
+                return JsonResponse({'error': 'Credenciais inválidas'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+            
+    return JsonResponse({'error': 'Método não permitido'}, status=405)
+
+# -------------------------------------------------------------------
+# VIEW: Dashboard (Renderizado pelo Django)
+# -------------------------------------------------------------------
+@login_required(login_url='/admin/login/') 
+def dashboard(request):
+    # Tenta filtrar eventos pelo email do usuário logado para conectar
+    # o User do Django Auth com o seu model Usuario personalizado
+    try:
+        eventos = Evento.objects.filter(usuario__email=request.user.email)
+    except:
+        # Fallback: Se não der para filtrar, retorna lista vazia ou todos (ajuste conforme necessidade)
+        eventos = []
+
+    context = {
+        'usuario': request.user,
+        'eventos': eventos
+    }
+    return render(request, 'core/dashboard.html', context)

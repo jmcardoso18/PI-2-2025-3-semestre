@@ -1,22 +1,21 @@
 import { useState } from "react";
 import Navbar from "../componentes/Navbar";
 import Footer from "../componentes/Footer";
-import hero from "../assets/images/hero.jpg"; // <--- Importando a imagem
+import hero from "../assets/images/hero.jpg";
 
 export default function LoginPage() {
-    // Estados para guardar o que o usuário digita
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [erro, setErro] = useState("");
 
-    // Função que acontece quando clica em "Entrar"
     const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault(); // Evita recarregar a página
-        setErro(""); // Limpa erros antigos
+        e.preventDefault();
+        setErro("");
 
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/token/", {
+            const response = await fetch("http://127.0.0.1:8000/api/login-session/", {
                 method: "POST",
+                credentials: "include", 
                 headers: {
                     "Content-Type": "application/json",
                 },
@@ -29,21 +28,11 @@ export default function LoginPage() {
             const data = await response.json();
 
             if (response.ok) {
-                // SUCESSO!
-                console.log("Token recebido:", data.access);
-                alert("Login realizado com sucesso! (Veja o token no console)");
-                
-                // Salvar o token para usar depois
-                localStorage.setItem("token", data.access);
-                
-                // AQUI VOCÊ DECIDE O QUE FAZER:
-                // Opção A: Redirecionar para um Dashboard do React
-                // window.location.href = "/dashboard"; 
-                
-                // Opção B: Se a ideia é ir para o Django Admin (Jazzmin):
-                window.location.href = "http://127.0.0.1:8000/admin/";
+            
+                localStorage.removeItem("token"); 
+
+                window.location.href = "http://127.0.0.1:8000" + data.redirect;
             } else {
-                // ERRO (Senha errada)
                 setErro("Usuário ou senha inválidos.");
             }
         } catch (error) {
@@ -53,20 +42,16 @@ export default function LoginPage() {
     };
 
     return (
-        // Container principal com a imagem de fundo (igual à Home)
         <div className="min-h-screen relative flex flex-col text-white">
             
-            {/* Imagem de Fundo Fixa */}
             <div className="absolute inset-0 z-0">
                 <div 
                     className="h-full w-full bg-cover bg-center brightness-50"
                     style={{ backgroundImage: `url(${hero})` }}
                 />
             </div>
-            {/* Overlay preto para garantir leitura */}
             <div className="absolute inset-0 bg-black/40 z-[1]" />
 
-            {/* Conteúdo (Navbar e Form) fica acima do fundo (z-10) */}
             <div className="relative z-10 flex flex-col min-h-screen">
                 
                 <Navbar />
