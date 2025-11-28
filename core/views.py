@@ -4,8 +4,9 @@ from django.http import JsonResponse
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-
-from .models import Evento, Servico
+from .models import Evento, Servico, Usuario
+from .forms import ClienteForm
+from .forms import ClienteForm, EventoForm
 
 # -------------------------------------------------------------------
 # API: Serviços (Para o Home do React)
@@ -56,3 +57,85 @@ def dashboard(request):
         'eventos': eventos
     }
     return render(request, 'core/dashboard.html', context)
+
+# --- CRUD DE CLIENTES ---
+
+@login_required(login_url='/admin/login/')
+def cliente_lista(request):
+    # Lista apenas quem é do tipo 'cliente'
+    clientes = Usuario.objects.all() 
+    return render(request, 'core/cliente_lista.html', {'clientes': clientes})
+
+@login_required(login_url='/admin/login/')
+def cliente_novo(request):
+    if request.method == 'POST':
+        form = ClienteForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('cliente_lista')
+    else:
+        form = ClienteForm()
+    
+    return render(request, 'core/cliente_form.html', {'form': form, 'titulo': 'Novo Cliente'})
+
+@login_required(login_url='/admin/login/')
+def cliente_editar(request, id):
+    cliente = get_object_or_404(Usuario, id=id)
+    if request.method == 'POST':
+        form = ClienteForm(request.POST, instance=cliente)
+        if form.is_valid():
+            form.save()
+            return redirect('cliente_lista')
+    else:
+        form = ClienteForm(instance=cliente)
+    
+    return render(request, 'core/cliente_form.html', {'form': form, 'titulo': 'Editar Cliente'})
+
+@login_required(login_url='/admin/login/')
+def cliente_deletar(request, id):
+    cliente = get_object_or_404(Usuario, id=id)
+    if request.method == 'POST':
+        cliente.delete()
+        return redirect('cliente_lista')
+    return render(request, 'core/cliente_confirmar_delete.html', {'cliente': cliente})
+
+# --- CRUD DE EVENTOS ---
+
+@login_required(login_url='/admin/login/')
+def evento_lista(request):
+    eventos = Evento.objects.all().order_by('data') # Ordenado por data
+    return render(request, 'core/evento_lista.html', {'eventos': eventos})
+
+@login_required(login_url='/admin/login/')
+def evento_novo(request):
+    if request.method == 'POST':
+        form = EventoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('evento_lista')
+    else:
+        form = EventoForm()
+    
+    return render(request, 'core/evento_form.html', {'form': form, 'titulo': 'Novo Evento'})
+
+@login_required(login_url='/admin/login/')
+def evento_editar(request, id):
+    evento = get_object_or_404(Evento, id=id)
+    if request.method == 'POST':
+        form = EventoForm(request.POST, instance=evento)
+        if form.is_valid():
+            form.save()
+            return redirect('evento_lista')
+    else:
+        form = EventoForm(instance=evento) # Preenche com os dados existentes
+        
+    return render(request, 'core/evento_form.html', {'form': form, 'titulo': 'Editar Evento'})
+
+@login_required(login_url='/admin/login/')
+def evento_deletar(request, id):
+    evento = get_object_or_404(Evento, id=id)
+    if request.method == 'POST':
+        evento.delete()
+        return redirect('evento_lista')
+    # Reutiliza o template de confirmação de exclusão de cliente
+    return render(request, 'core/cliente_confirmar_delete.html', {'objeto': evento.nome, 'tipo': 'Evento'})

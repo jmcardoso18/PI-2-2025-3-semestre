@@ -1,0 +1,43 @@
+{% extends 'core/base_dashboard.html' %}
+
+{% block content %}
+<style>
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; margin-bottom: 8px; color: var(--text-main); font-weight: bold; }
+    .form-input, .form-select {
+        width: 100%; padding: 12px; border: 1px solid var(--border);
+        border-radius: 8px; background: var(--bg-main); font-size: 1rem;
+    }
+    .btn-save {
+        background-color: var(--primary); color: #4a4a4a; font-weight: bold;
+        padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer;
+    }
+    .btn-cancel {
+        background-color: transparent; border: 1px solid var(--border);
+        padding: 12px 24px; border-radius: 8px; text-decoration: none; color: var(--text-muted); margin-right: 10px;
+    }
+</style>
+
+<h1>{{ titulo }}</h1>
+
+<div class="card" style="max-width: 600px; margin-top: 20px;">
+    <form method="POST">
+        {% csrf_token %}
+        
+        {% for field in form %}
+        <div class="form-group">
+            <label>{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+                <small style="color: red;">{{ field.errors.0 }}</small>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <div style="margin-top: 30px;">
+            <a href="{% url 'cliente_lista' %}" class="btn-cancel">Cancelar</a>
+            <button type="submit" class="btn-save">Salvar</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
