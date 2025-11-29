@@ -1,207 +1,111 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel - Karine Diena</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
-    
-    <style>
-        /* --- PALETA DE CORES TONS PASTÉIS --- */
-        :root {
-            --bg-main: #F9FAFB;
-            --bg-sidebar: #EAE7F2;
-            --bg-card: #FFFFFF;
-            --text-main: #3F3A47;
-            --text-muted: #9C96A3;
-            --primary: #E7C9C9;
-            --primary-hover: #DAB3B3;
-            --accent: #C7DADO;
-            --border: #DCD7D3;
-        }
+{% extends 'core/base_dashboard.html' %}
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+{% block content %}
+    <div class="mb-10 text-center">
+        <h1 class="font-display text-3xl sm:text-4xl text-neutral-900">
+            Visão Geral
+        </h1>
+        <p class="mt-2 text-neutral-600">
+            Resumo das atividades e atalhos de gestão.
+        </p>
+    </div>
 
-        body {
-            font-family: 'Lato', sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* SIDEBAR */
-        aside {
-            width: 260px;
-            background-color: var(--bg-sidebar);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-        }
-
-        .logo {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.2rem;
-            letter-spacing: 0.15em;
-            margin-bottom: 40px;
-            color: var(--text-main);
-            text-transform: uppercase;
-        }
-
-        nav a {
-            display: flex;
-            align-items: center;
-            padding: 12px 15px;
-            color: var(--text-main);
-            text-decoration: none;
-            border-radius: 8px;
-            margin-bottom: 5px;
-            transition: 0.3s;
-            font-weight: 500;
-        }
-
-        nav a:hover, nav a.active {
-            background-color: #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-
-        nav a span { margin-right: 10px; }
-
-        .logout-btn {
-            margin-top: auto;
-            border: none;
-            background: none;
-            color: #d9534f;
-            cursor: pointer;
-            padding: 10px;
-            text-align: left;
-            font-weight: bold;
-        }
-
-        /* MAIN CONTENT */
-        main {
-            flex: 1;
-            padding: 40px;
-            overflow-y: auto;
-        }
-
-        header { margin-bottom: 40px; }
-        h1 { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 5px; }
-        .subtitle { color: var(--text-muted); }
-
-        /* CARDS GRID */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .card {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 25px;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-        }
-
-        .badge {
-            background-color: var(--accent);
-            color: #2c3e50;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            font-weight: bold;
-            display: inline-block;
-            margin-bottom: 15px;
-        }
-
-        .card h3 { font-size: 1.2rem; margin-bottom: 10px; }
+    <div class="max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
         
-        .card-info {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .btn-details {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            background-color: var(--primary);
-            color: #4a4a4a;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: bold;
-            transition: background 0.3s;
-        }
-
-        .btn-details:hover {
-            background-color: var(--primary-hover);
-        }
-
-        .empty-state {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 50px;
-            color: var(--text-muted);
-            background: #fff;
-            border-radius: 10px;
-            border: 1px dashed var(--border);
-        }
-    </style>
-</head>
-<body>
-
-    <aside>
-        <div class="logo">Karine Diena</div>
-        <nav>
-            <a href="#" class="active"><span>📊</span> Visão Geral</a>
-            <a href="#"><span>📅</span> Eventos</a>
-            <a href="#"><span>👤</span> Meu Perfil</a>
-        </nav>
-        <a href="/admin/logout/" class="logout-btn">🚪 Sair</a>
-    </aside>
-
-    <main>
-        <header>
-            <h1>Olá, {{ usuario.nome|default:usuario.username }}</h1>
-            <p class="subtitle">Bem-vindo ao seu painel de controle de eventos.</p>
-        </header>
-
-        <div class="grid">
-            {% if eventos %}
-                {% for evento in eventos %}
-                <div class="card">
-                    <span class="badge">{{ evento.tipo }}</span>
-                    <h3>{{ evento.nome }}</h3>
-                    
-                    <div class="card-info">
-                        <span>🗓️ {{ evento.data|date:"d/m/Y" }}</span>
-                        <span>📍 {{ evento.local }}</span>
-                    </div>
-
-                    <a href="#" class="btn-details">Ver detalhes</a>
-                </div>
-                {% endfor %}
-            {% else %}
-                <div class="empty-state">
-                    <h3>Você ainda não possui eventos cadastrados.</h3>
-                    <p>Entre em contato com a equipe para iniciar seu planejamento.</p>
-                </div>
-            {% endif %}
+        <div class="bg-white p-6 rounded-2xl border border-neutral-100 shadow-sm flex items-center gap-4">
+            <div class="h-12 w-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xl">📅</div>
+            <div>
+                <p class="text-sm text-neutral-500 font-medium uppercase tracking-wide">Eventos</p>
+                <h3 class="text-3xl font-display font-semibold text-neutral-900">{{ total_eventos }}</h3>
+            </div>
         </div>
-    </main>
 
-</body>
-</html>
+        <div class="bg-white p-6 rounded-2xl border border-neutral-100 shadow-sm flex items-center gap-4">
+            <div class="h-12 w-12 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center text-xl">👥</div>
+            <div>
+                <p class="text-sm text-neutral-500 font-medium uppercase tracking-wide">Clientes</p>
+                <h3 class="text-3xl font-display font-semibold text-neutral-900">{{ total_clientes }}</h3>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="text-center mb-10">
+        <h2 class="text-lg font-bold text-neutral-800 mb-6">Módulos de Gestão</h2>
+        
+        <div class="flex flex-wrap justify-center gap-4">
+            <a href="{% url 'cliente_lista' %}" class="w-36 sm:w-40 group bg-white p-5 rounded-xl border border-neutral-200 shadow-sm hover:border-black hover:shadow-md transition flex flex-col items-center text-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-neutral-50 group-hover:bg-neutral-100 flex items-center justify-center text-xl transition">👥</div>
+                <span class="text-sm font-semibold text-neutral-700 group-hover:text-black">Clientes</span>
+            </a>
+
+            <a href="{% url 'evento_lista' %}" class="w-36 sm:w-40 group bg-white p-5 rounded-xl border border-neutral-200 shadow-sm hover:border-black hover:shadow-md transition flex flex-col items-center text-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-neutral-50 group-hover:bg-neutral-100 flex items-center justify-center text-xl transition">📅</div>
+                <span class="text-sm font-semibold text-neutral-700 group-hover:text-black">Eventos</span>
+            </a>
+
+            <a href="#" class="w-36 sm:w-40 group bg-white p-5 rounded-xl border border-neutral-200 shadow-sm hover:border-black hover:shadow-md transition flex flex-col items-center text-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-neutral-50 group-hover:bg-neutral-100 flex items-center justify-center text-xl transition">🚚</div>
+                <span class="text-sm font-semibold text-neutral-700 group-hover:text-black">Fornecedores</span>
+            </a>
+
+            <a href="#" class="w-36 sm:w-40 group bg-white p-5 rounded-xl border border-neutral-200 shadow-sm hover:border-black hover:shadow-md transition flex flex-col items-center text-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-neutral-50 group-hover:bg-neutral-100 flex items-center justify-center text-xl transition">⏰</div>
+                <span class="text-sm font-semibold text-neutral-700 group-hover:text-black">Atividades</span>
+            </a>
+
+            <a href="#" class="w-36 sm:w-40 group bg-white p-5 rounded-xl border border-neutral-200 shadow-sm hover:border-black hover:shadow-md transition flex flex-col items-center text-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-neutral-50 group-hover:bg-neutral-100 flex items-center justify-center text-xl transition">📝</div>
+                <span class="text-sm font-semibold text-neutral-700 group-hover:text-black">Pendências</span>
+            </a>
+
+            <a href="#" class="w-36 sm:w-40 group bg-white p-5 rounded-xl border border-neutral-200 shadow-sm hover:border-black hover:shadow-md transition flex flex-col items-center text-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-neutral-50 group-hover:bg-neutral-100 flex items-center justify-center text-xl transition">⚠️</div>
+                <span class="text-sm font-semibold text-neutral-700 group-hover:text-black">Ocorrências</span>
+            </a>
+
+            <a href="#" class="w-36 sm:w-40 group bg-white p-5 rounded-xl border border-neutral-200 shadow-sm hover:border-black hover:shadow-md transition flex flex-col items-center text-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-neutral-50 group-hover:bg-neutral-100 flex items-center justify-center text-xl transition">💰</div>
+                <span class="text-sm font-semibold text-neutral-700 group-hover:text-black">Serviços</span>
+            </a>
+
+            <a href="#" class="w-36 sm:w-40 group bg-white p-5 rounded-xl border border-neutral-200 shadow-sm hover:border-black hover:shadow-md transition flex flex-col items-center text-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-neutral-50 group-hover:bg-neutral-100 flex items-center justify-center text-xl transition">🔐</div>
+                <span class="text-sm font-semibold text-neutral-700 group-hover:text-black">Acessos</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-5 border-b border-neutral-100 flex justify-between items-center">
+            <h3 class="font-semibold text-neutral-800">Próximos Eventos na Agenda</h3>
+            <a href="{% url 'evento_lista' %}" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Ver todos →</a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-neutral-600">
+                <thead class="bg-neutral-50 text-xs uppercase text-neutral-500 font-semibold">
+                    <tr>
+                        <th class="px-6 py-3">Evento</th>
+                        <th class="px-6 py-3">Data</th>
+                        <th class="px-6 py-3">Local</th>
+                        <th class="px-6 py-3 text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-neutral-100">
+                    {% for evento in proximos_eventos %}
+                    <tr class="hover:bg-neutral-50 transition">
+                        <td class="px-6 py-4 font-medium text-neutral-900">{{ evento.nome }}</td>
+                        <td class="px-6 py-4">{{ evento.data|date:"d/m/Y" }}</td>
+                        <td class="px-6 py-4">{{ evento.local }}</td>
+                        <td class="px-6 py-4 text-center">
+                            <a href="{% url 'colaborador_area' evento.id %}" class="text-xs border border-neutral-300 px-3 py-1.5 rounded-lg hover:bg-neutral-800 hover:text-white transition">Painel</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="px-6 py-8 text-center text-neutral-400">Nenhum evento próximo.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

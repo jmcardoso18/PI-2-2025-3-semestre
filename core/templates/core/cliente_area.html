@@ -1,0 +1,155 @@
+{% extends 'core/base_dashboard.html' %}
+
+{% block content %}
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+        <div>
+            <h1 class="font-display text-3xl sm:text-4xl text-neutral-900 mb-1">
+                {{ evento.nome }}
+            </h1>
+            <p class="text-sm text-neutral-600">
+                {{ evento.data|date:"d/m/Y" }} · {{ evento.local }} · {{ evento.tipo }}
+            </p>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 text-center text-xs">
+            <div class="rounded-xl bg-white border border-neutral-200 px-3 py-2 min-w-[60px] shadow-sm">
+                <p class="text-[10px] uppercase tracking-wide text-neutral-500">Dias</p>
+                <p class="text-lg font-semibold text-neutral-900" id="count-days">--</p>
+            </div>
+            <div class="rounded-xl bg-white border border-neutral-200 px-3 py-2 min-w-[60px] shadow-sm">
+                <p class="text-[10px] uppercase tracking-wide text-neutral-500">Horas</p>
+                <p class="text-lg font-semibold text-neutral-900" id="count-hours">--</p>
+            </div>
+            <div class="rounded-xl bg-white border border-neutral-200 px-3 py-2 min-w-[60px] shadow-sm">
+                <p class="text-[10px] uppercase tracking-wide text-neutral-500">Min</p>
+                <p class="text-lg font-semibold text-neutral-900" id="count-mins">--</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid gap-8 lg:grid-cols-[1.7fr_1fr] items-start">
+        
+        <section class="space-y-6">
+            
+            <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+                <h2 class="mb-4 text-sm font-semibold tracking-wide text-neutral-700 uppercase border-b border-neutral-100 pb-2">
+                    Dados do evento
+                </h2>
+                <div class="grid gap-4 text-sm sm:grid-cols-2 text-neutral-800">
+                    <div><p class="text-xs text-neutral-500 mb-0.5">Cliente</p><p class="font-medium">{{ evento.usuario.nome }}</p></div>
+                    <div><p class="text-xs text-neutral-500 mb-0.5">Data</p><p class="font-medium">{{ evento.data|date:"d/m/Y" }}</p></div>
+                    <div><p class="text-xs text-neutral-500 mb-0.5">Local</p><p class="font-medium">{{ evento.local }}</p></div>
+                    <div><p class="text-xs text-neutral-500 mb-0.5">Estimativa</p><p class="font-medium">{{ evento.estimativa_convidados }}</p></div>
+                </div>
+            </div>
+
+            <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm transition">
+                <div class="flex justify-between items-center mb-4 border-b border-neutral-100 pb-2">
+                    <h2 class="text-sm font-semibold tracking-wide text-neutral-700 uppercase">Tarefas preparatórias</h2>
+                    <span class="text-xs text-neutral-400">{{ tarefas.count }} pendentes</span>
+                </div>
+                <div class="space-y-3">
+                    {% for tarefa in tarefas %}
+                    <div class="grid grid-cols-[auto,1fr,auto] items-start gap-3 rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-3 text-xs sm:text-sm transition hover:bg-white hover:border-neutral-300 group">
+                        <button onclick="toggleTarefa({{ tarefa.id }})" 
+                            class="mt-0.5 flex h-5 w-5 items-center justify-center rounded border transition cursor-pointer {% if tarefa.feito %}border-neutral-900 bg-neutral-900{% else %}border-neutral-400 bg-white group-hover:border-neutral-600{% endif %}">
+                            {% if tarefa.feito %}<span class="text-white text-[10px]">✓</span>{% endif %}
+                        </button>
+                        <div>
+                            <p class="font-medium text-neutral-900 transition {% if tarefa.feito %}line-through text-neutral-400{% endif %}">
+                                {{ tarefa.titulo }}
+                                <span class="font-normal block text-neutral-500 mt-0.5">{{ tarefa.descricao|default:"" }}</span>
+                            </p>
+                        </div>
+                        <span class="text-[10px] font-medium px-2 py-1 rounded bg-neutral-200 text-neutral-600 whitespace-nowrap">{{ tarefa.data_limite|date:"d/m" }}</span>
+                    </div>
+                    {% empty %}
+                    <p class="text-sm text-neutral-500 italic py-4 text-center">Nenhuma tarefa pendente.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+                <h2 class="mb-4 text-sm font-semibold tracking-wide text-neutral-700 uppercase border-b border-neutral-100 pb-2">Fornecedores</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-left text-xs sm:text-sm">
+                        <thead>
+                            <tr class="text-[10px] uppercase tracking-wide text-neutral-400 font-medium">
+                                <th class="py-2 pr-4">Serviço</th><th class="py-2 pr-4">Empresa</th><th class="py-2 pr-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-neutral-50">
+                            {% for fornecedor in fornecedores %}
+                            <tr class="group hover:bg-neutral-50 transition">
+                                <td class="py-3 pr-4 text-neutral-600">{{ fornecedor.servico }}</td>
+                                <td class="py-3 pr-4 font-medium text-neutral-900">{{ fornecedor.empresa }}</td>
+                                <td class="py-3 pr-4"><span class="rounded-full px-2.5 py-0.5 text-[10px] font-medium bg-neutral-100 text-neutral-600">{{ fornecedor.status }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="py-6 text-center text-neutral-400 text-sm">Nenhum fornecedor.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <aside class="space-y-6 sticky top-24">
+            <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm text-center">
+                <p class="text-xs font-semibold tracking-[0.25em] uppercase text-neutral-400 mb-2">Faltam apenas</p>
+                <p class="text-4xl font-display font-bold text-neutral-900 mb-1" id="days-text">0</p>
+                <p class="text-sm text-neutral-600 uppercase tracking-widest font-medium">dias</p>
+            </div>
+            
+            <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+                <p class="mb-4 text-center text-xs font-bold uppercase tracking-widest text-neutral-800 border-b border-neutral-100 pb-2">{{ evento.data|date:"F Y" }}</p>
+                <div class="grid grid-cols-7 gap-1 text-center text-[10px]">
+                    <div class="py-1 font-semibold text-neutral-400">D</div>
+                    <div class="py-1 font-semibold text-neutral-400">S</div>
+                    <div class="py-1 font-semibold text-neutral-400">T</div>
+                    <div class="py-1 font-semibold text-neutral-400">Q</div>
+                    <div class="py-1 font-semibold text-neutral-400">Q</div>
+                    <div class="py-1 font-semibold text-neutral-400">S</div>
+                    <div class="py-1 font-semibold text-neutral-400">S</div>
+                    {% for i in "123456789012345678901234567890" %}
+                        <div class="flex h-7 w-7 mx-auto items-center justify-center rounded-full text-[11px] {% if forloop.counter == evento.data.day %}bg-black text-white font-bold shadow-md scale-110{% else %}text-neutral-600 hover:bg-neutral-100{% endif %}">
+                            {{ forloop.counter }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </aside>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const eventDate = new Date("{{ evento.data|date:'Y-m-d' }}T00:00:00");
+
+    function updateCountdown() {
+        const now = new Date();
+        const diff = eventDate - now;
+        if (diff <= 0) return;
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((diff / (1000 * 60)) % 60);
+
+        document.getElementById("count-days").innerText = days;
+        document.getElementById("count-hours").innerText = hours;
+        document.getElementById("count-mins").innerText = minutes;
+        document.getElementById("days-text").innerText = days;
+    }
+    setInterval(updateCountdown, 1000 * 60);
+    updateCountdown();
+
+    function toggleTarefa(id) {
+        fetch(`/api/toggle-tarefa/${id}/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        }).then(res => res.json()).then(data => {
+            if (data.status === 'sucesso') window.location.reload();
+        });
+    }
+</script>
+{% endblock %}

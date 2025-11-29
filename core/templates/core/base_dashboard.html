@@ -1,0 +1,131 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel - Karine Diena</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400;600&display=swap');
+        .font-display { font-family: 'Playfair Display', serif; }
+        body { font-family: 'Inter', sans-serif; }
+        
+        .hidden-menu { display: none; }
+    </style>
+</head>
+<body class="min-h-screen bg-black text-white flex flex-col font-sans">
+
+    <header class="border-b border-white/10 bg-black/90 px-4 sm:px-8 py-2 flex items-center justify-between sticky top-0 z-50 backdrop-blur-md h-[57px]">
+        
+        <div class="flex items-center gap-4">
+            <button id="menu-btn" class="p-1.5 text-white hover:text-[#d4af37] transition focus:outline-none border border-white/20 rounded-md">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+
+            <a href="{% url 'dashboard' %}" class="font-display text-lg tracking-wider uppercase font-semibold text-white hover:text-[#d4af37] transition-colors">
+                Karine Diena
+            </a>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <span class="hidden sm:block text-xs text-white/60">
+                Olá, {{ user.first_name|default:user.username }}
+            </span>
+
+            <a href="{% url 'logout_react' %}" class="text-xs rounded-full border border-white/40 px-3 py-1 text-white hover:bg-white/10 transition no-underline">
+                Sair
+            </a>
+        </div>
+    </header>
+
+    <div id="mobile-menu" class="hidden-menu fixed top-[57px] left-0 w-full md:w-96 bg-neutral-900 border-r border-b border-white/10 z-40 shadow-2xl p-6">
+        <h3 class="text-xs font-semibold uppercase tracking-[0.2em] text-white/40 mb-6">Menu de Gestão</h3>
+        
+        <div class="grid grid-cols-2 gap-4">
+            <a href="{% url 'cliente_lista' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition group">
+                <span class="text-xl group-hover:scale-110 transition">👥</span>
+                <span class="text-sm font-medium text-white/80 group-hover:text-white">Clientes</span>
+            </a>
+            <a href="{% url 'evento_lista' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition group">
+                <span class="text-xl group-hover:scale-110 transition">📅</span>
+                <span class="text-sm font-medium text-white/80 group-hover:text-white">Eventos</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition group opacity-60">
+                <span class="text-xl">🚚</span>
+                <span class="text-sm font-medium text-white/80">Fornecedores</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition group opacity-60">
+                <span class="text-xl">⏰</span>
+                <span class="text-sm font-medium text-white/80">Atividades</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition group opacity-60">
+                <span class="text-xl">📝</span>
+                <span class="text-sm font-medium text-white/80">Pendências</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition group opacity-60">
+                <span class="text-xl">⚠️</span>
+                <span class="text-sm font-medium text-white/80">Ocorrências</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition group opacity-60">
+                <span class="text-xl">💰</span>
+                <span class="text-sm font-medium text-white/80">Serviços</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition group opacity-60">
+                <span class="text-xl">🔐</span>
+                <span class="text-sm font-medium text-white/80">Acessos</span>
+            </a>
+        </div>
+    </div>
+
+    <main class="flex-1 bg-[#f9f5ea] text-black">
+        <div class="mx-auto max-w-6xl px-4 sm:px-6 py-10">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </main>
+
+    <footer class="bg-black text-white border-t border-white/10 py-2 px-4">
+        <div class="mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-between gap-2 text-[10px] text-white/40">
+            
+            <div class="flex items-center gap-3">
+                <span class="tracking-[0.15em] uppercase font-semibold text-white/60">Karine Diena</span>
+                <span class="hidden md:inline">|</span>
+                <span>© {% now "Y" %} Direitos reservados.</span>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <span>Dev: <a href="#" class="hover:text-[#d4af37] transition-colors">Morgan Devs</a></span>
+                
+                <div class="flex gap-2 text-white/60">
+                    <a href="mailto:exemplo@email.com" class="hover:text-[#d4af37] transition"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm0 2v.51l8 5.49 8-5.49V6H4Zm16 12V9l-8 5.5L4 9v9h16Z"/></svg></a>
+                    <a href="#" class="hover:text-[#d4af37] transition"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.94 14.32L2 22l5.82-1.94A10 10 0 1 0 12 2Zm0 18a8 8 0 0 1-4.14-1.15l-.3-.18-3.45 1.15 1.13-3.36-.2-.33A8 8 0 1 1 12 20Zm4.24-5.24c-.24-.12-1.44-.71-1.67-.79s-.39-.12-.55.12-.63.79-.77.95-.28.18-.52.06a6.51 6.51 0 0 1-3.22-2.82c-.24-.42.24-.39.69-1.29a.45.45 0 0 0 0-.43c-.06-.12-.55-1.33-.76-1.82s-.4-.42-.55-.42-.3 0-.46 0a.89.89 0 0 0-.64.3 2.72 2.72 0 0 0-.88 2.02A4.74 4.74 0 0 0 9 14.25a10.94 10.94 0 0 0 5.92 3.26 2 2 0 0 0 1.3-.08 2.29 2.29 0 0 0 1-1.34c.12-.24.12-.43.06-.55s-.21-.15-.39-.24Z"/></svg></a>
+                    <a href="#" class="hover:text-[#d4af37] transition"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 2C4.243 2 2 4.243 2 7v10c0 2.757 2.243 5 5 5h10c2.757 0 5-2.243 5-5V7c0-2.757-2.243-5-5-5H7Zm10 2a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h10Zm-5 3a5 5 0 1 0 5 5 5.006 5.006 0 0 0-5-5Zm0 2a3 3 0 1 1-3 3 3.009 3.009 0 0 1 3-3Zm4.5-.75a1.25 1.25 0 1 0-1.25-1.25A1.252 1.252 0 0 0 16.5 8.25Z"/></svg></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            mobileMenu.classList.toggle('hidden-menu');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!mobileMenu.contains(e.target) && !menuBtn.contains(e.target)) {
+                mobileMenu.classList.add('hidden-menu');
+            }
+        });
+    </script>
+
+    {% block scripts %}
+    {% endblock %}
+
+</body>
+</html>

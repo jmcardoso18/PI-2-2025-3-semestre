@@ -14,7 +14,7 @@ SECRET_KEY = 'django-insecure-f^i&i!jj5tk4di3i7duygj+^qnlu(yv8&1qo^*z3z7ewvb=pu*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
@@ -90,7 +90,7 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Redirecionamentos de Login
-LOGIN_URL = '/admin/login/'      
+LOGIN_URL = 'http://127.0.0.1:5173/login'
 LOGIN_REDIRECT_URL = '/dashboard/'
 
 # ----------------------------------------------------------------------
@@ -99,8 +99,8 @@ LOGIN_REDIRECT_URL = '/dashboard/'
 
 # 1. Quem pode acessar a API do Django
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
     "http://127.0.0.1:5173", 
+    "http://localhost:5173",
 ]
 
 # 2. Permite envio de Cookies (Session ID)
@@ -111,4 +111,10 @@ SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_DOMAIN = None
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1:5173",
+    "http://localhost:5173",
+]
