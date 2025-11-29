@@ -7,8 +7,8 @@ from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 
 # IMPORTS DOS SEUS MODELS E FORMS
-from .models import Evento, Servico, Usuario, Atividade, Convidado, Tarefa
-from .forms import ClienteForm, EventoForm
+from .models import Evento, Servico, Usuario, Atividade, Convidado, Tarefa, Fornecedor
+from .forms import ClienteForm, EventoForm, FornecedorForm, TarefaForm
 
 # -------------------------------------------------------------------
 # API: Serviços (Para o Home do React)
@@ -20,33 +20,33 @@ def lista_servicos(request):
 # -------------------------------------------------------------------
 # API: Login (Cria sessão e decide para onde redirecionar)
 # -------------------------------------------------------------------
-
-@csrf_exempt
+@csrf_exempt 
 def login_react_session(request):
     if request.method == 'POST':
-        # MUDANÇA: Lê dados de formulário, não JSON
+        # Lendo dados de Formulário (request.POST)
         username = request.POST.get('username')
         password = request.POST.get('password')
         
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
-            login(request, user)
-            # Sucesso: Django redireciona o navegador para o painel correto
+            login(request, user) # Cria o cookie de sessão
+            
+            # LÓGICA DE REDIRECIONAMENTO
             if user.is_staff:
-                return redirect('/dashboard/')
+                return redirect('/dashboard/')     # Admin
             else:
-                return redirect('/area-cliente/')
+                return redirect('/area-cliente/')  # Cliente
         else:
-            # Erro: Django manda de volta para o React com aviso
+            # Erro: Manda de volta para o React com aviso
             return redirect('http://127.0.0.1:5173/login?error=true')
             
     return JsonResponse({'error': 'Método não permitido'}, status=405)
 
 # -------------------------------------------------------------------
-# VIEW: Dashboard Admin (Visão Geral / KPIs)
+# VIEW: Dashboard Admin
 # -------------------------------------------------------------------
-@login_required
+@login_required(login_url='/admin/login/') 
 def dashboard(request):
     if not request.user.is_staff:
         return redirect('area_cliente')
@@ -77,10 +77,10 @@ def cliente_novo(request):
     if request.method == 'POST':
         form = ClienteForm(request.POST)
         if form.is_valid():
-            # 1. Salva no banco personalizado
+            # 1. Salva o cliente
             cliente = form.save()
             
-            # 2. Cria Login Django (Sincronização)
+            # 2. Cria/Atualiza o Login do Django
             email = form.cleaned_data['email']
             senha = form.cleaned_data['senha']
             nome = form.cleaned_data['nome']
@@ -114,7 +114,7 @@ def cliente_editar(request, id):
             senha = form.cleaned_data['senha']
             try:
                 user_login = User.objects.get(username=email)
-                if senha and not user_login.check_password(senha):
+                if senha:
                     user_login.set_password(senha)
                     user_login.save()
             except User.DoesNotExist:
@@ -129,7 +129,6 @@ def cliente_deletar(request, id):
     cliente = get_object_or_404(Usuario, id=id)
     if request.method == 'POST':
         try:
-            # Tenta apagar o login também para manter limpo
             u = User.objects.get(username=cliente.email)
             u.delete()
         except:
@@ -206,17 +205,15 @@ def toggle_atividade(request, id):
 
 @login_required(login_url='/admin/login/')
 def area_cliente(request):
-    # Busca o evento pelo email do usuário logado
     evento = Evento.objects.filter(usuario__email=request.user.email).first()
 
     if not evento:
-        # Fallback para Admin testar: pega o primeiro evento
         if request.user.is_staff:
             evento = Evento.objects.first()
         
         if not evento:
-            # Caso não tenha nenhum evento no sistema
-            return render(request, 'core/base_dashboard.html', {'error': 'Nenhum evento encontrado.'})
+            # CORREÇÃO: Enviando o usuário no contexto para o nome aparecer no topo
+            return render(request, 'core/cliente_area.html', {'evento': None, 'usuario': request.user})
 
     tarefas = evento.tarefas.all().order_by('data_limite')
     fornecedores = evento.fornecedores.all()
@@ -241,8 +238,90 @@ def toggle_tarefa(request, id):
     return JsonResponse({'error': 'Erro'}, status=400)
 
 # -------------------------------------------------------------------
+# CRUD DE FORNECEDORES
+# -------------------------------------------------------------------
+
+@login_required(login_url='/admin/login/')
+def fornecedor_lista(request):
+    fornecedores = Fornecedor.objects.all().order_by('empresa')
+    return render(request, 'core/fornecedor_lista.html', {'fornecedores': fornecedores})
+
+@login_required(login_url='/admin/login/')
+def fornecedor_novo(request):
+    if request.method == 'POST':
+        form = FornecedorForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('fornecedor_lista')
+    else:
+        form = FornecedorForm()
+    return render(request, 'core/fornecedor_form.html', {'form': form, 'titulo': 'Novo Fornecedor'})
+
+@login_required(login_url='/admin/login/')
+def fornecedor_editar(request, id):
+    fornecedor = get_object_or_404(Fornecedor, id=id)
+    if request.method == 'POST':
+        form = FornecedorForm(request.POST, instance=fornecedor)
+        if form.is_valid():
+            form.save()
+            return redirect('fornecedor_lista')
+    else:
+        form = FornecedorForm(instance=fornecedor)
+    return render(request, 'core/fornecedor_form.html', {'form': form, 'titulo': 'Editar Fornecedor'})
+
+@login_required(login_url='/admin/login/')
+def fornecedor_deletar(request, id):
+    fornecedor = get_object_or_404(Fornecedor, id=id)
+    if request.method == 'POST':
+        fornecedor.delete()
+        return redirect('fornecedor_lista')
+    # Reutiliza o template genérico de exclusão
+    return render(request, 'core/cliente_confirmar_delete.html', {'objeto': fornecedor.empresa, 'tipo': 'Fornecedor'})
+
+
+# -------------------------------------------------------------------
+# CRUD DE TAREFAS (PENDÊNCIAS)
+# -------------------------------------------------------------------
+
+@login_required(login_url='/admin/login/')
+def tarefa_lista(request):
+    tarefas = Tarefa.objects.all().order_by('data_limite')
+    return render(request, 'core/tarefa_lista.html', {'tarefas': tarefas})
+
+@login_required(login_url='/admin/login/')
+def tarefa_nova(request):
+    if request.method == 'POST':
+        form = TarefaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('tarefa_lista')
+    else:
+        form = TarefaForm()
+    return render(request, 'core/tarefa_form.html', {'form': form, 'titulo': 'Nova Tarefa'})
+
+@login_required(login_url='/admin/login/')
+def tarefa_editar(request, id):
+    tarefa = get_object_or_404(Tarefa, id=id)
+    if request.method == 'POST':
+        form = TarefaForm(request.POST, instance=tarefa)
+        if form.is_valid():
+            form.save()
+            return redirect('tarefa_lista')
+    else:
+        form = TarefaForm(instance=tarefa)
+    return render(request, 'core/tarefa_form.html', {'form': form, 'titulo': 'Editar Tarefa'})
+
+@login_required(login_url='/admin/login/')
+def tarefa_deletar(request, id):
+    tarefa = get_object_or_404(Tarefa, id=id)
+    if request.method == 'POST':
+        tarefa.delete()
+        return redirect('tarefa_lista')
+    return render(request, 'core/cliente_confirmar_delete.html', {'objeto': tarefa.titulo, 'tipo': 'Tarefa'})
+
+# -------------------------------------------------------------------
 # LOGOUT
 # -------------------------------------------------------------------
 def logout_react(request):
-    logout(request) # Encerra sessão no Django
+    logout(request)
     return redirect('http://localhost:5173/login')

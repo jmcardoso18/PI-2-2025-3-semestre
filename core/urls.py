@@ -5,6 +5,8 @@ from .views import (
     lista_servicos, login_react_session, dashboard,
     cliente_lista, cliente_novo, cliente_editar, cliente_deletar,
     evento_lista, evento_novo, evento_editar, evento_deletar,
+    fornecedor_lista, fornecedor_novo, fornecedor_editar, fornecedor_deletar,
+    tarefa_lista, tarefa_nova, tarefa_editar, tarefa_deletar,
     colaborador_area, toggle_atividade, area_cliente, toggle_tarefa, logout_react
 )
 
@@ -30,6 +32,18 @@ urlpatterns = [
     path('dashboard/eventos/novo/', evento_novo, name='evento_novo'),
     path('dashboard/eventos/editar/<int:id>/', evento_editar, name='evento_editar'),
     path('dashboard/eventos/deletar/<int:id>/', evento_deletar, name='evento_deletar'),
+
+    # ROTAS DE FORNECEDORES
+    path('dashboard/fornecedores/', fornecedor_lista, name='fornecedor_lista'),
+    path('dashboard/fornecedores/novo/', fornecedor_novo, name='fornecedor_novo'),
+    path('dashboard/fornecedores/editar/<int:id>/', fornecedor_editar, name='fornecedor_editar'),
+    path('dashboard/fornecedores/deletar/<int:id>/', fornecedor_deletar, name='fornecedor_deletar'),
+
+    # ROTAS DE TAREFAS
+    path('dashboard/tarefas/', tarefa_lista, name='tarefa_lista'),
+    path('dashboard/tarefas/nova/', tarefa_nova, name='tarefa_nova'),
+    path('dashboard/tarefas/editar/<int:id>/', tarefa_editar, name='tarefa_editar'),
+    path('dashboard/tarefas/deletar/<int:id>/', tarefa_deletar, name='tarefa_deletar'),
 
     # Área do Colaborador
     path('colaborador/evento/<int:evento_id>/', colaborador_area, name='colaborador_area'),
