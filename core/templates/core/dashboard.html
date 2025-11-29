@@ -1,27 +1,111 @@
 {% extends 'core/base_dashboard.html' %}
 
 {% block content %}
-    <header>
-        <h1>Olá, {{ usuario.username }}</h1> <p class="subtitle">Bem-vindo ao seu painel de controle.</p>
-    </header>
+    <div class="mb-10 text-center">
+        <h1 class="font-display text-3xl sm:text-4xl text-neutral-900">
+            Visão Geral
+        </h1>
+        <p class="mt-2 text-neutral-600">
+            Resumo das atividades e atalhos de gestão.
+        </p>
+    </div>
 
-    <div class="grid">
-        {% if eventos %}
-            {% for evento in eventos %}
-            <div class="card">
-                <span class="badge">{{ evento.tipo }}</span>
-                <h3>{{ evento.nome }}</h3>
-                <div class="card-info">
-                    <span>🗓️ {{ evento.data|date:"d/m/Y" }}</span>
-                    <span>📍 {{ evento.local }}</span>
-                </div>
-                <a href="#" class="btn-details">Ver detalhes</a>
+    <div class="max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
+        
+        <div class="bg-white p-6 rounded-2xl border border-neutral-100 shadow-sm flex items-center gap-4">
+            <div class="h-12 w-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xl">📅</div>
+            <div>
+                <p class="text-sm text-neutral-500 font-medium uppercase tracking-wide">Eventos</p>
+                <h3 class="text-3xl font-display font-semibold text-neutral-900">{{ total_eventos }}</h3>
             </div>
-            {% endfor %}
-        {% else %}
-            <div class="empty-state">
-                <h3>Sem eventos recentes.</h3>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-neutral-100 shadow-sm flex items-center gap-4">
+            <div class="h-12 w-12 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center text-xl">👥</div>
+            <div>
+                <p class="text-sm text-neutral-500 font-medium uppercase tracking-wide">Clientes</p>
+                <h3 class="text-3xl font-display font-semibold text-neutral-900">{{ total_clientes }}</h3>
             </div>
-        {% endif %}
+        </div>
+
+    </div>
+
+    <div class="text-center mb-10">
+        <h2 class="text-lg font-bold text-neutral-800 mb-6">Módulos de Gestão</h2>
+        
+        <div class="flex flex-wrap justify-center gap-4">
+            <a href="{% url 'cliente_lista' %}" class="w-36 sm:w-40 group bg-white p-5 rounded-xl border border-neutral-200 shadow-sm hover:border-black hover:shadow-md transition flex flex-col items-center text-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-neutral-50 group-hover:bg-neutral-100 flex items-center justify-center text-xl transition">👥</div>
+                <span class="text-sm font-semibold text-neutral-700 group-hover:text-black">Clientes</span>
+            </a>
+
+            <a href="{% url 'evento_lista' %}" class="w-36 sm:w-40 group bg-white p-5 rounded-xl border border-neutral-200 shadow-sm hover:border-black hover:shadow-md transition flex flex-col items-center text-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-neutral-50 group-hover:bg-neutral-100 flex items-center justify-center text-xl transition">📅</div>
+                <span class="text-sm font-semibold text-neutral-700 group-hover:text-black">Eventos</span>
+            </a>
+
+            <a href="#" class="w-36 sm:w-40 group bg-white p-5 rounded-xl border border-neutral-200 shadow-sm hover:border-black hover:shadow-md transition flex flex-col items-center text-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-neutral-50 group-hover:bg-neutral-100 flex items-center justify-center text-xl transition">🚚</div>
+                <span class="text-sm font-semibold text-neutral-700 group-hover:text-black">Fornecedores</span>
+            </a>
+
+            <a href="#" class="w-36 sm:w-40 group bg-white p-5 rounded-xl border border-neutral-200 shadow-sm hover:border-black hover:shadow-md transition flex flex-col items-center text-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-neutral-50 group-hover:bg-neutral-100 flex items-center justify-center text-xl transition">⏰</div>
+                <span class="text-sm font-semibold text-neutral-700 group-hover:text-black">Atividades</span>
+            </a>
+
+            <a href="#" class="w-36 sm:w-40 group bg-white p-5 rounded-xl border border-neutral-200 shadow-sm hover:border-black hover:shadow-md transition flex flex-col items-center text-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-neutral-50 group-hover:bg-neutral-100 flex items-center justify-center text-xl transition">📝</div>
+                <span class="text-sm font-semibold text-neutral-700 group-hover:text-black">Pendências</span>
+            </a>
+
+            <a href="#" class="w-36 sm:w-40 group bg-white p-5 rounded-xl border border-neutral-200 shadow-sm hover:border-black hover:shadow-md transition flex flex-col items-center text-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-neutral-50 group-hover:bg-neutral-100 flex items-center justify-center text-xl transition">⚠️</div>
+                <span class="text-sm font-semibold text-neutral-700 group-hover:text-black">Ocorrências</span>
+            </a>
+
+            <a href="#" class="w-36 sm:w-40 group bg-white p-5 rounded-xl border border-neutral-200 shadow-sm hover:border-black hover:shadow-md transition flex flex-col items-center text-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-neutral-50 group-hover:bg-neutral-100 flex items-center justify-center text-xl transition">💰</div>
+                <span class="text-sm font-semibold text-neutral-700 group-hover:text-black">Serviços</span>
+            </a>
+
+            <a href="#" class="w-36 sm:w-40 group bg-white p-5 rounded-xl border border-neutral-200 shadow-sm hover:border-black hover:shadow-md transition flex flex-col items-center text-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-neutral-50 group-hover:bg-neutral-100 flex items-center justify-center text-xl transition">🔐</div>
+                <span class="text-sm font-semibold text-neutral-700 group-hover:text-black">Acessos</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-5 border-b border-neutral-100 flex justify-between items-center">
+            <h3 class="font-semibold text-neutral-800">Próximos Eventos na Agenda</h3>
+            <a href="{% url 'evento_lista' %}" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Ver todos →</a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-neutral-600">
+                <thead class="bg-neutral-50 text-xs uppercase text-neutral-500 font-semibold">
+                    <tr>
+                        <th class="px-6 py-3">Evento</th>
+                        <th class="px-6 py-3">Data</th>
+                        <th class="px-6 py-3">Local</th>
+                        <th class="px-6 py-3 text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-neutral-100">
+                    {% for evento in proximos_eventos %}
+                    <tr class="hover:bg-neutral-50 transition">
+                        <td class="px-6 py-4 font-medium text-neutral-900">{{ evento.nome }}</td>
+                        <td class="px-6 py-4">{{ evento.data|date:"d/m/Y" }}</td>
+                        <td class="px-6 py-4">{{ evento.local }}</td>
+                        <td class="px-6 py-4 text-center">
+                            <a href="{% url 'colaborador_area' evento.id %}" class="text-xs border border-neutral-300 px-3 py-1.5 rounded-lg hover:bg-neutral-800 hover:text-white transition">Painel</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="px-6 py-8 text-center text-neutral-400">Nenhum evento próximo.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 {% endblock %}

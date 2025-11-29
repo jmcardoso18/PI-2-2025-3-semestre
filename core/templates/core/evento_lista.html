@@ -3,7 +3,9 @@
 {% block content %}
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
     <h1>Gerenciar Eventos</h1>
-    <a href="{% url 'evento_novo' %}" class="btn-details" style="width: auto; padding: 10px 20px;">+ Novo Evento</a>
+    <a href="{% url 'evento_novo' %}" class="bg-black text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-neutral-800 transition shadow-lg">
+            + Novo Evento
+        </a>
 </div>
 
 <div class="grid">
@@ -19,7 +21,7 @@
         <div class="card-info">
             <span>🗓️ {{ evento.data|date:"d/m/Y" }}</span>
             <span>📍 {{ evento.local }}</span>
-            <span>👥 {{ evento.convidados }} convidados</span>
+            <span>👥 {{ evento.estimativa_convidados }} convidados (estimado)</span>
         </div>
 
         <div style="display: flex; gap: 10px; margin-top: 15px;">

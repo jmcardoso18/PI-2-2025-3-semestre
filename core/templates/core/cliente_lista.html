@@ -3,7 +3,9 @@
 {% block content %}
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
     <h1>Gerenciar Clientes</h1>
-    <a href="{% url 'cliente_novo' %}" class="btn-details" style="width: auto; padding: 10px 20px;">+ Novo Cliente</a>
+    <a href="{% url 'cliente_novo' %}" class="bg-black text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-neutral-800 transition shadow-lg">
+        + Novo Cliente
+    </a>
 </div>
 
 <div class="card" style="overflow-x: auto;">

@@ -8,9 +8,6 @@ class Servico(models.Model):
     descricao = models.TextField()
     # Null=True permite deixar sem preço "Sob Consulta"
     preco = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    
-    # Se quiser colocar foto no futuro:
-    # imagem = models.ImageField(upload_to='servicos/', null=True, blank=True)
 
     def __str__(self):
         return self.titulo
@@ -21,7 +18,6 @@ class Servico(models.Model):
 class Usuario(models.Model):
     nome = models.CharField(max_length=255)
     email = models.EmailField(max_length=255, unique=True)
-    # OBS: Para produção futura, considere usar o AbstractUser do Django para segurança da senha
     senha = models.CharField(max_length=255) 
     tipo = models.CharField(max_length=255)
     celular = models.CharField(max_length=15, blank=True, null=True)
@@ -40,7 +36,7 @@ class Evento(models.Model):
     nome = models.CharField(max_length=255)
     data = models.DateField()
     local = models.CharField(max_length=255)
-    convidados = models.CharField(max_length=255) 
+    estimativa_convidados = models.CharField(max_length=255) 
 
     def __str__(self):
         return f"{self.nome} ({self.data.strftime('%d/%m/%Y')})"
@@ -72,10 +68,29 @@ class Pendencia(models.Model):
 
 class Atividade(models.Model):
     evento = models.ForeignKey(Evento, on_delete=models.CASCADE, related_name="atividades")
+    nome = models.CharField(max_length=255) 
+    # Mudamos para TimeField para facilitar ordenação
+    horario = models.TimeField()            
+    # Checkbox de conclusão
+    feito = models.BooleanField(default=False) 
+
+    class Meta:
+        ordering = ['horario'] 
+
+    def __str__(self):
+        return f"{self.nome} - {self.evento.nome}"
+
+class Convidado(models.Model):
+    STATUS_CHOICES = [
+        ('Pendente', 'Pendente'),
+        ('Confirmado', 'Confirmado'),
+        ('Recusado', 'Recusado'),
+    ]
+
+    evento = models.ForeignKey(Evento, on_delete=models.CASCADE, related_name="convidados")
     nome = models.CharField(max_length=255)
-    descricao = models.CharField(max_length=255, blank=True, null=True)
-    horario = models.CharField(max_length=255) 
-    status = models.CharField(max_length=255)
+    acompanhantes = models.IntegerField(default=0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pendente')
 
     def __str__(self):
         return self.nome
@@ -100,3 +115,13 @@ class Documento(models.Model):
 
     def __str__(self):
         return self.descricao
+    
+class Tarefa(models.Model):
+    evento = models.ForeignKey(Evento, on_delete=models.CASCADE, related_name="tarefas")
+    titulo = models.CharField(max_length=255)
+    descricao = models.CharField(max_length=255, blank=True, null=True)
+    data_limite = models.DateField()
+    feito = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.titulo
