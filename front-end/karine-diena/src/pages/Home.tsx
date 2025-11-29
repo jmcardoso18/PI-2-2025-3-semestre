@@ -1,7 +1,7 @@
 import Navbar from "../componentes/Navbar";
 import hero from "../assets/images/hero.jpg";
 import card from "../assets/images/card.png";
-import Footer from "../componentes/Footer";
+
 
 const Home = () => {
     return (
@@ -323,7 +323,6 @@ const Home = () => {
                 </div>
             </section>
 
-            <Footer />
         </div>
     );
 };

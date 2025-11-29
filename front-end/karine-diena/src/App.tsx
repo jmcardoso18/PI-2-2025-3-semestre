@@ -1,12 +1,21 @@
-import { Routes, Route } from 'react-router-dom'
-import LoginPage from './pages/LoginPage'
-import Home from './pages/Home'
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import LoginPage from "./pages/LoginPage";
+import Home from "./pages/Home";
+import ColaboradorArea from "./pages/ColaboradorArea";
+import ClienteArea from "./pages/ClienteArea";
 
-export default function App() {
+
+const App: React.FC = () => {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<LoginPage />} />
-    </Routes>
-  )
-}
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/area-cliente" element={<ClienteArea />} />
+        <Route path="/area-colaborador" element={<ColaboradorArea />} />
+      </Routes>
+    </BrowserRouter>
+  );
+};
+
+export default App;
