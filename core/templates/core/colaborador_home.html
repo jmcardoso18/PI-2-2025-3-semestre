@@ -1,0 +1,47 @@
+{% extends 'core/base_dashboard.html' %}
+
+{% block content %}
+    <div class="mb-8 text-center">
+        <h1 class="font-display text-3xl text-neutral-900">Painel da Equipe</h1>
+        <p class="mt-2 text-neutral-600">Selecione o evento que você está trabalhando hoje.</p>
+    </div>
+
+    <div class="max-w-4xl mx-auto bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-neutral-600">
+                <thead class="bg-neutral-50 text-xs uppercase text-neutral-500 font-semibold">
+                    <tr>
+                        <th class="px-6 py-4">Data</th>
+                        <th class="px-6 py-4">Evento</th>
+                        <th class="px-6 py-4">Local</th>
+                        <th class="px-6 py-4 text-center">Ação</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-neutral-100">
+                    {% for evento in eventos %}
+                    <tr class="hover:bg-neutral-50 transition">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center rounded-md bg-neutral-100 px-2 py-1 text-xs font-medium text-neutral-700 ring-1 ring-inset ring-neutral-600/10">
+                                {{ evento.data|date:"d/m/Y" }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 font-medium text-neutral-900">{{ evento.nome }}</td>
+                        <td class="px-6 py-4">{{ evento.local }}</td>
+                        <td class="px-6 py-4 text-center">
+                            <a href="{% url 'colaborador_area' evento.id %}" class="inline-flex items-center justify-center rounded-lg bg-black px-4 py-2 text-xs font-bold text-white hover:bg-neutral-800 transition shadow-sm">
+                                ACESSAR
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-10 text-center text-neutral-400">
+                            Nenhum evento agendado para os próximos dias.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

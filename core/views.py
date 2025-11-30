@@ -2,13 +2,17 @@ import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 
 # IMPORTS DOS SEUS MODELS E FORMS
 from .models import Evento, Servico, Usuario, Atividade, Convidado, Tarefa, Fornecedor
 from .forms import ClienteForm, EventoForm, FornecedorForm, TarefaForm
+
+# --- FUNÇÕES AUXILIARES ---
+def eh_admin(user):
+    return user.is_staff
 
 # -------------------------------------------------------------------
 # API: Serviços (Para o Home do React)
@@ -18,39 +22,66 @@ def lista_servicos(request):
     return JsonResponse(list(servicos), safe=False)
 
 # -------------------------------------------------------------------
-# API: Login (Cria sessão e decide para onde redirecionar)
+# API: Login (Lógica Tripla de Redirecionamento)
 # -------------------------------------------------------------------
 @csrf_exempt 
 def login_react_session(request):
     if request.method == 'POST':
-        # Lendo dados de Formulário (request.POST)
         username = request.POST.get('username')
         password = request.POST.get('password')
         
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
-            login(request, user) # Cria o cookie de sessão
+            login(request, user)
             
-            # LÓGICA DE REDIRECIONAMENTO
+            # 1. ADMIN (Staff)
             if user.is_staff:
-                return redirect('/dashboard/')     # Admin
-            else:
-                return redirect('/area-cliente/')  # Cliente
+                return redirect('/dashboard/')
+            
+            # Tenta achar o perfil personalizado para decidir entre Cliente e Colaborador
+            try:
+                # Busca pelo email, já que definimos que o username é o email
+                perfil = Usuario.objects.get(email=user.username)
+                
+                # 2. COLABORADOR (Se tiver "colaborador" ou "equipe" no tipo)
+                if 'colaborador' in perfil.tipo.lower() or 'equipe' in perfil.tipo.lower():
+                    return redirect('colaborador_home')
+                
+                # 3. CLIENTE (Padrão)
+                else:
+                    return redirect('/area-cliente/')
+                    
+            except Usuario.DoesNotExist:
+                # Se não achar perfil mas logou, manda para área do cliente por segurança
+                return redirect('/area-cliente/')
+                
         else:
-            # Erro: Manda de volta para o React com aviso
-            return redirect('http://127.0.0.1:5173/login?error=true')
+            return redirect('http://localhost:5173/login?error=invalid_credentials')
             
     return JsonResponse({'error': 'Método não permitido'}, status=405)
 
 # -------------------------------------------------------------------
-# VIEW: Dashboard Admin
+# VIEW: Dashboard Admin (Visão Geral / KPIs)
 # -------------------------------------------------------------------
 @login_required(login_url='/admin/login/') 
 def dashboard(request):
+    
     if not request.user.is_staff:
-        return redirect('area_cliente')
+        try:
+            # Busca o perfil pelo email
+            perfil = Usuario.objects.get(email=request.user.email)
+            
+            if 'colaborador' in perfil.tipo.lower() or 'equipe' in perfil.tipo.lower():
+                return redirect('colaborador_home')
+            
+            # Senão, Cliente -> Área do Cliente
+            return redirect('area_cliente')
+            
+        except Usuario.DoesNotExist:
+            return redirect('area_cliente')
 
+    # --- LÓGICA DO ADMIN ---
     todos_eventos = Evento.objects.all().order_by('data')
     total_clientes = Usuario.objects.all().count() 
 
@@ -68,53 +99,48 @@ def dashboard(request):
 # -------------------------------------------------------------------
 
 @login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
 def cliente_lista(request):
     clientes = Usuario.objects.all() 
     return render(request, 'core/cliente_lista.html', {'clientes': clientes})
 
 @login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
 def cliente_novo(request):
     if request.method == 'POST':
         form = ClienteForm(request.POST)
         if form.is_valid():
-            # 1. Salva o cliente
             cliente = form.save()
-            
-            # 2. Cria/Atualiza o Login do Django
+            # Cria Login Django
             email = form.cleaned_data['email']
             senha = form.cleaned_data['senha']
             nome = form.cleaned_data['nome']
 
             if not User.objects.filter(username=email).exists():
-                User.objects.create_user(
-                    username=email, 
-                    email=email, 
-                    password=senha, 
-                    first_name=nome.split()[0]
-                )
+                User.objects.create_user(username=email, email=email, password=senha, first_name=nome.split()[0])
             else:
                 user = User.objects.get(username=email)
                 user.set_password(senha)
                 user.save()
-
             return redirect('cliente_lista')
     else:
         form = ClienteForm()
     return render(request, 'core/cliente_form.html', {'form': form, 'titulo': 'Novo Cliente'})
 
 @login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
 def cliente_editar(request, id):
     cliente = get_object_or_404(Usuario, id=id)
     if request.method == 'POST':
         form = ClienteForm(request.POST, instance=cliente)
         if form.is_valid():
             form.save()
-            # Atualiza senha do login se necessário
+            # Atualiza senha
             email = form.cleaned_data['email']
             senha = form.cleaned_data['senha']
             try:
                 user_login = User.objects.get(username=email)
-                if senha:
+                if senha: 
                     user_login.set_password(senha)
                     user_login.save()
             except User.DoesNotExist:
@@ -125,6 +151,7 @@ def cliente_editar(request, id):
     return render(request, 'core/cliente_form.html', {'form': form, 'titulo': 'Editar Cliente'})
 
 @login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
 def cliente_deletar(request, id):
     cliente = get_object_or_404(Usuario, id=id)
     if request.method == 'POST':
@@ -142,11 +169,13 @@ def cliente_deletar(request, id):
 # -------------------------------------------------------------------
 
 @login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
 def evento_lista(request):
     eventos = Evento.objects.all().order_by('data')
     return render(request, 'core/evento_lista.html', {'eventos': eventos})
 
 @login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
 def evento_novo(request):
     if request.method == 'POST':
         form = EventoForm(request.POST)
@@ -158,6 +187,7 @@ def evento_novo(request):
     return render(request, 'core/evento_form.html', {'form': form, 'titulo': 'Novo Evento'})
 
 @login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
 def evento_editar(request, id):
     evento = get_object_or_404(Evento, id=id)
     if request.method == 'POST':
@@ -170,6 +200,7 @@ def evento_editar(request, id):
     return render(request, 'core/evento_form.html', {'form': form, 'titulo': 'Editar Evento'})
 
 @login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
 def evento_deletar(request, id):
     evento = get_object_or_404(Evento, id=id)
     if request.method == 'POST':
@@ -178,15 +209,107 @@ def evento_deletar(request, id):
     return render(request, 'core/cliente_confirmar_delete.html', {'objeto': evento.nome, 'tipo': 'Evento'})
 
 # -------------------------------------------------------------------
+# CRUD DE FORNECEDORES
+# -------------------------------------------------------------------
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def fornecedor_lista(request):
+    fornecedores = Fornecedor.objects.all().order_by('empresa')
+    return render(request, 'core/fornecedor_lista.html', {'fornecedores': fornecedores})
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def fornecedor_novo(request):
+    if request.method == 'POST':
+        form = FornecedorForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('fornecedor_lista')
+    else:
+        form = FornecedorForm()
+    return render(request, 'core/fornecedor_form.html', {'form': form, 'titulo': 'Novo Fornecedor'})
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def fornecedor_editar(request, id):
+    fornecedor = get_object_or_404(Fornecedor, id=id)
+    if request.method == 'POST':
+        form = FornecedorForm(request.POST, instance=fornecedor)
+        if form.is_valid():
+            form.save()
+            return redirect('fornecedor_lista')
+    else:
+        form = FornecedorForm(instance=fornecedor)
+    return render(request, 'core/fornecedor_form.html', {'form': form, 'titulo': 'Editar Fornecedor'})
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def fornecedor_deletar(request, id):
+    fornecedor = get_object_or_404(Fornecedor, id=id)
+    if request.method == 'POST':
+        fornecedor.delete()
+        return redirect('fornecedor_lista')
+    return render(request, 'core/cliente_confirmar_delete.html', {'objeto': fornecedor.empresa, 'tipo': 'Fornecedor'})
+
+# -------------------------------------------------------------------
+# CRUD DE TAREFAS (PENDÊNCIAS)
+# -------------------------------------------------------------------
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def tarefa_lista(request):
+    tarefas = Tarefa.objects.all().order_by('data_limite')
+    return render(request, 'core/tarefa_lista.html', {'tarefas': tarefas})
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def tarefa_nova(request):
+    if request.method == 'POST':
+        form = TarefaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('tarefa_lista')
+    else:
+        form = TarefaForm()
+    return render(request, 'core/tarefa_form.html', {'form': form, 'titulo': 'Nova Tarefa'})
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def tarefa_editar(request, id):
+    tarefa = get_object_or_404(Tarefa, id=id)
+    if request.method == 'POST':
+        form = TarefaForm(request.POST, instance=tarefa)
+        if form.is_valid():
+            form.save()
+            return redirect('tarefa_lista')
+    else:
+        form = TarefaForm(instance=tarefa)
+    return render(request, 'core/tarefa_form.html', {'form': form, 'titulo': 'Editar Tarefa'})
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def tarefa_deletar(request, id):
+    tarefa = get_object_or_404(Tarefa, id=id)
+    if request.method == 'POST':
+        tarefa.delete()
+        return redirect('tarefa_lista')
+    return render(request, 'core/cliente_confirmar_delete.html', {'objeto': tarefa.titulo, 'tipo': 'Tarefa'})
+
+# -------------------------------------------------------------------
 # ÁREA DO COLABORADOR
 # -------------------------------------------------------------------
+
+@login_required(login_url='/admin/login/')
+def colaborador_home(request):
+    eventos = Evento.objects.all().order_by('data')
+    return render(request, 'core/colaborador_home.html', {'eventos': eventos})
 
 @login_required(login_url='/admin/login/')
 def colaborador_area(request, evento_id):
     evento = get_object_or_404(Evento, id=evento_id)
     atividades = evento.atividades.all()
     convidados = evento.convidados.all()
-
     context = { 'evento': evento, 'atividades': atividades, 'convidados': convidados }
     return render(request, 'core/colaborador_area.html', context)
 
@@ -212,7 +335,6 @@ def area_cliente(request):
             evento = Evento.objects.first()
         
         if not evento:
-            # CORREÇÃO: Enviando o usuário no contexto para o nome aparecer no topo
             return render(request, 'core/cliente_area.html', {'evento': None, 'usuario': request.user})
 
     tarefas = evento.tarefas.all().order_by('data_limite')
@@ -236,88 +358,6 @@ def toggle_tarefa(request, id):
         tarefa.save()
         return JsonResponse({'status': 'sucesso', 'feito': tarefa.feito})
     return JsonResponse({'error': 'Erro'}, status=400)
-
-# -------------------------------------------------------------------
-# CRUD DE FORNECEDORES
-# -------------------------------------------------------------------
-
-@login_required(login_url='/admin/login/')
-def fornecedor_lista(request):
-    fornecedores = Fornecedor.objects.all().order_by('empresa')
-    return render(request, 'core/fornecedor_lista.html', {'fornecedores': fornecedores})
-
-@login_required(login_url='/admin/login/')
-def fornecedor_novo(request):
-    if request.method == 'POST':
-        form = FornecedorForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('fornecedor_lista')
-    else:
-        form = FornecedorForm()
-    return render(request, 'core/fornecedor_form.html', {'form': form, 'titulo': 'Novo Fornecedor'})
-
-@login_required(login_url='/admin/login/')
-def fornecedor_editar(request, id):
-    fornecedor = get_object_or_404(Fornecedor, id=id)
-    if request.method == 'POST':
-        form = FornecedorForm(request.POST, instance=fornecedor)
-        if form.is_valid():
-            form.save()
-            return redirect('fornecedor_lista')
-    else:
-        form = FornecedorForm(instance=fornecedor)
-    return render(request, 'core/fornecedor_form.html', {'form': form, 'titulo': 'Editar Fornecedor'})
-
-@login_required(login_url='/admin/login/')
-def fornecedor_deletar(request, id):
-    fornecedor = get_object_or_404(Fornecedor, id=id)
-    if request.method == 'POST':
-        fornecedor.delete()
-        return redirect('fornecedor_lista')
-    # Reutiliza o template genérico de exclusão
-    return render(request, 'core/cliente_confirmar_delete.html', {'objeto': fornecedor.empresa, 'tipo': 'Fornecedor'})
-
-
-# -------------------------------------------------------------------
-# CRUD DE TAREFAS (PENDÊNCIAS)
-# -------------------------------------------------------------------
-
-@login_required(login_url='/admin/login/')
-def tarefa_lista(request):
-    tarefas = Tarefa.objects.all().order_by('data_limite')
-    return render(request, 'core/tarefa_lista.html', {'tarefas': tarefas})
-
-@login_required(login_url='/admin/login/')
-def tarefa_nova(request):
-    if request.method == 'POST':
-        form = TarefaForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('tarefa_lista')
-    else:
-        form = TarefaForm()
-    return render(request, 'core/tarefa_form.html', {'form': form, 'titulo': 'Nova Tarefa'})
-
-@login_required(login_url='/admin/login/')
-def tarefa_editar(request, id):
-    tarefa = get_object_or_404(Tarefa, id=id)
-    if request.method == 'POST':
-        form = TarefaForm(request.POST, instance=tarefa)
-        if form.is_valid():
-            form.save()
-            return redirect('tarefa_lista')
-    else:
-        form = TarefaForm(instance=tarefa)
-    return render(request, 'core/tarefa_form.html', {'form': form, 'titulo': 'Editar Tarefa'})
-
-@login_required(login_url='/admin/login/')
-def tarefa_deletar(request, id):
-    tarefa = get_object_or_404(Tarefa, id=id)
-    if request.method == 'POST':
-        tarefa.delete()
-        return redirect('tarefa_lista')
-    return render(request, 'core/cliente_confirmar_delete.html', {'objeto': tarefa.titulo, 'tipo': 'Tarefa'})
 
 # -------------------------------------------------------------------
 # LOGOUT

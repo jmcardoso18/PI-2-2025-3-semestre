@@ -7,7 +7,7 @@ from .views import (
     evento_lista, evento_novo, evento_editar, evento_deletar,
     fornecedor_lista, fornecedor_novo, fornecedor_editar, fornecedor_deletar,
     tarefa_lista, tarefa_nova, tarefa_editar, tarefa_deletar,
-    colaborador_area, toggle_atividade, area_cliente, toggle_tarefa, logout_react
+    colaborador_area, colaborador_home, toggle_atividade, area_cliente, toggle_tarefa, logout_react
 )
 
 urlpatterns = [
@@ -46,6 +46,7 @@ urlpatterns = [
     path('dashboard/tarefas/deletar/<int:id>/', tarefa_deletar, name='tarefa_deletar'),
 
     # Área do Colaborador
+    path('colaborador/home/', colaborador_home, name='colaborador_home'),
     path('colaborador/evento/<int:evento_id>/', colaborador_area, name='colaborador_area'),
     
     # API Checkbox
