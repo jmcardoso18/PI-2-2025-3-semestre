@@ -1,0 +1,41 @@
+{% extends 'core/base_dashboard.html' %}
+
+{% block content %}
+    <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="font-display text-2xl sm:text-3xl text-neutral-900">
+                Catálogo de Serviços
+            </h1>
+        </div>
+        <a href="{% url 'servico_novo' %}" class="bg-black text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-neutral-800 transition shadow-lg flex items-center gap-2">
+            <span>+</span> Novo Pacote
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for s in servicos %}
+        <div class="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 flex flex-col hover:shadow-md transition">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="font-display text-xl font-bold text-neutral-900">{{ s.titulo }}</h3>
+                <span class="inline-flex items-center rounded-full bg-neutral-100 px-2.5 py-0.5 text-sm font-bold text-neutral-800 border border-neutral-200">
+                    R$ {{ s.preco }}
+                </span>
+            </div>
+            
+            <p class="text-sm text-neutral-500 mb-6 line-clamp-3 flex-grow">
+                {{ s.descricao }}
+            </p>
+
+            <div class="pt-4 border-t border-neutral-100 flex justify-end gap-3">
+                <a href="{% url 'servico_editar' s.id %}" class="text-sm font-medium text-neutral-600 hover:text-black transition">Editar</a>
+                <span class="text-neutral-300">|</span>
+                <a href="{% url 'servico_deletar' s.id %}" class="text-sm font-medium text-red-500 hover:text-red-700 transition">Excluir</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-3 py-10 text-center text-neutral-400">
+            Nenhum serviço cadastrado.
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}

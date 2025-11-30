@@ -1,0 +1,68 @@
+{% extends 'core/base_dashboard.html' %}
+
+{% block content %}
+    <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="font-display text-2xl sm:text-3xl text-neutral-900">
+                Gerenciar Acessos
+            </h1>
+        </div>
+        <a href="{% url 'equipe_nova' %}" class="bg-black text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-neutral-800 transition shadow-lg flex items-center gap-2">
+            <span>+</span> Novo Membro
+        </a>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-neutral-600">
+                <thead class="bg-neutral-50 text-xs uppercase text-neutral-500 font-semibold tracking-wider">
+                    <tr>
+                        <th class="px-6 py-4">Nome</th>
+                        <th class="px-6 py-4">Email (Login)</th>
+                        <th class="px-6 py-4">Função</th>
+                        <th class="px-6 py-4">Acesso Admin</th>
+                        <th class="px-6 py-4 text-right">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-neutral-100">
+                    {% for membro in equipe %}
+                    <tr class="hover:bg-neutral-50 transition group">
+                        <td class="px-6 py-4 font-medium text-neutral-900">
+                            {{ membro.nome }}
+                        </td>
+                        <td class="px-6 py-4">
+                            {{ membro.email }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium 
+                                {% if membro.tipo == 'Cerimonialista' %}bg-purple-50 text-purple-700 ring-1 ring-inset ring-purple-600/20
+                                {% else %}bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-500/10{% endif %}">
+                                {{ membro.tipo }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if membro.tipo == 'Cerimonialista' %}
+                                <span class="text-green-600 font-bold text-xs">SIM</span>
+                            {% else %}
+                                <span class="text-neutral-400 text-xs">NÃO</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end gap-3">
+                                <a href="{% url 'equipe_editar' membro.id %}" class="text-neutral-400 hover:text-orange-500 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
+                                </a>
+                                <a href="{% url 'equipe_deletar' membro.id %}" class="text-neutral-400 hover:text-red-500 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="px-6 py-10 text-center text-neutral-400">Nenhum membro na equipe.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

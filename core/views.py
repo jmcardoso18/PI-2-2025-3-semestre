@@ -7,8 +7,8 @@ from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 
 # IMPORTS DOS SEUS MODELS E FORMS
-from .models import Evento, Servico, Usuario, Atividade, Convidado, Tarefa, Fornecedor
-from .forms import ClienteForm, EventoForm, FornecedorForm, TarefaForm
+from .models import Evento, Servico, Usuario, Atividade, Convidado, Tarefa, Fornecedor, Ocorrencia, Servico
+from .forms import ClienteForm, EquipeForm, EventoForm, FornecedorForm, TarefaForm, AtividadeForm, OcorrenciaForm, ServicoForm
 
 # --- FUNÇÕES AUXILIARES ---
 def eh_admin(user):
@@ -297,6 +297,139 @@ def tarefa_deletar(request, id):
     return render(request, 'core/cliente_confirmar_delete.html', {'objeto': tarefa.titulo, 'tipo': 'Tarefa'})
 
 # -------------------------------------------------------------------
+# CRUD DE ACESSOS (EQUIPE)
+# -------------------------------------------------------------------
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def equipe_lista(request):
+    # Lista todos que NÃO são clientes/noivos (filtro simples)
+    equipe = Usuario.objects.exclude(tipo__in=['Noiva', 'Noivo', 'Cliente']).order_by('nome')
+    return render(request, 'core/equipe_lista.html', {'equipe': equipe})
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def equipe_nova(request):
+    if request.method == 'POST':
+        form = EquipeForm(request.POST)
+        if form.is_valid():
+            # 1. Salva no banco personalizado
+            membro = form.save()
+            
+            # 2. Cria o Login do Django com permissões
+            email = form.cleaned_data['email']
+            senha = form.cleaned_data['senha']
+            nome = form.cleaned_data['nome']
+            tipo = form.cleaned_data['tipo']
+
+            # Define se é Admin (Staff) com base no cargo
+            eh_staff = (tipo == 'Cerimonialista')
+
+            if not User.objects.filter(username=email).exists():
+                User.objects.create_user(
+                    username=email, 
+                    email=email, 
+                    password=senha, 
+                    first_name=nome.split()[0],
+                    is_staff=eh_staff # <--- AQUI ESTÁ O SEGREDINHO
+                )
+            else:
+                u = User.objects.get(username=email)
+                u.set_password(senha)
+                u.is_staff = eh_staff
+                u.save()
+
+            return redirect('equipe_lista')
+    else:
+        form = EquipeForm()
+    return render(request, 'core/equipe_form.html', {'form': form, 'titulo': 'Novo Membro da Equipe'})
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def equipe_editar(request, id):
+    membro = get_object_or_404(Usuario, id=id)
+    if request.method == 'POST':
+        form = EquipeForm(request.POST, instance=membro)
+        if form.is_valid():
+            form.save()
+            # Atualiza login e permissão
+            email = form.cleaned_data['email']
+            senha = form.cleaned_data['senha']
+            tipo = form.cleaned_data['tipo']
+            eh_staff = (tipo == 'Cerimonialista')
+            
+            try:
+                u = User.objects.get(username=email)
+                if senha: u.set_password(senha)
+                u.is_staff = eh_staff
+                u.save()
+            except User.DoesNotExist:
+                pass
+                
+            return redirect('equipe_lista')
+    else:
+        form = EquipeForm(instance=membro)
+    return render(request, 'core/equipe_form.html', {'form': form, 'titulo': 'Editar Membro'})
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def equipe_deletar(request, id):
+    membro = get_object_or_404(Usuario, id=id)
+    if request.method == 'POST':
+        try:
+            u = User.objects.get(username=membro.email)
+            u.delete() 
+        except:
+            pass
+        membro.delete()
+        return redirect('equipe_lista')
+    return render(request, 'core/cliente_confirmar_delete.html', {'objeto': membro.nome, 'tipo': 'Membro da Equipe'})
+
+# -------------------------------------------------------------------
+# CRUD DE SERVIÇOS (PACOTES)
+# -------------------------------------------------------------------
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def servico_lista(request):
+    servicos = Servico.objects.all().order_by('preco')
+    return render(request, 'core/servico_lista.html', {'servicos': servicos})
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def servico_novo(request):
+    if request.method == 'POST':
+        form = ServicoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('servico_lista')
+    else:
+        form = ServicoForm()
+    return render(request, 'core/servico_form.html', {'form': form, 'titulo': 'Novo Serviço'})
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def servico_editar(request, id):
+    servico = get_object_or_404(Servico, id=id)
+    if request.method == 'POST':
+        form = ServicoForm(request.POST, instance=servico)
+        if form.is_valid():
+            form.save()
+            return redirect('servico_lista')
+    else:
+        form = ServicoForm(instance=servico)
+    return render(request, 'core/servico_form.html', {'form': form, 'titulo': 'Editar Serviço'})
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def servico_deletar(request, id):
+    servico = get_object_or_404(Servico, id=id)
+    if request.method == 'POST':
+        servico.delete()
+        return redirect('servico_lista')
+    return render(request, 'core/cliente_confirmar_delete.html', {'objeto': servico.titulo, 'tipo': 'Serviço'})
+
+# -------------------------------------------------------------------
 # ÁREA DO COLABORADOR
 # -------------------------------------------------------------------
 
@@ -358,6 +491,95 @@ def toggle_tarefa(request, id):
         tarefa.save()
         return JsonResponse({'status': 'sucesso', 'feito': tarefa.feito})
     return JsonResponse({'error': 'Erro'}, status=400)
+
+# -------------------------------------------------------------------
+# CRUD DE ATIVIDADES (CRONOGRAMA)
+# -------------------------------------------------------------------
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def atividade_lista(request):
+    # Ordena por evento e depois por horário
+    atividades = Atividade.objects.all().order_by('evento', 'horario')
+    return render(request, 'core/atividade_lista.html', {'atividades': atividades})
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def atividade_nova(request):
+    if request.method == 'POST':
+        form = AtividadeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('atividade_lista')
+    else:
+        form = AtividadeForm()
+    return render(request, 'core/atividade_form.html', {'form': form, 'titulo': 'Nova Atividade'})
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def atividade_editar(request, id):
+    atividade = get_object_or_404(Atividade, id=id)
+    if request.method == 'POST':
+        form = AtividadeForm(request.POST, instance=atividade)
+        if form.is_valid():
+            form.save()
+            return redirect('atividade_lista')
+    else:
+        form = AtividadeForm(instance=atividade)
+    return render(request, 'core/atividade_form.html', {'form': form, 'titulo': 'Editar Atividade'})
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def atividade_deletar(request, id):
+    atividade = get_object_or_404(Atividade, id=id)
+    if request.method == 'POST':
+        atividade.delete()
+        return redirect('atividade_lista')
+    return render(request, 'core/cliente_confirmar_delete.html', {'objeto': atividade.nome, 'tipo': 'Atividade'})
+
+# -------------------------------------------------------------------
+# CRUD DE OCORRÊNCIAS
+# -------------------------------------------------------------------
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def ocorrencia_lista(request):
+    ocorrencias = Ocorrencia.objects.all().order_by('-id') # Mais recentes primeiro
+    return render(request, 'core/ocorrencia_lista.html', {'ocorrencias': ocorrencias})
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def ocorrencia_nova(request):
+    if request.method == 'POST':
+        form = OcorrenciaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('ocorrencia_lista')
+    else:
+        form = OcorrenciaForm()
+    return render(request, 'core/ocorrencia_form.html', {'form': form, 'titulo': 'Registrar Ocorrência'})
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def ocorrencia_editar(request, id):
+    ocorrencia = get_object_or_404(Ocorrencia, id=id)
+    if request.method == 'POST':
+        form = OcorrenciaForm(request.POST, instance=ocorrencia)
+        if form.is_valid():
+            form.save()
+            return redirect('ocorrencia_lista')
+    else:
+        form = OcorrenciaForm(instance=ocorrencia)
+    return render(request, 'core/ocorrencia_form.html', {'form': form, 'titulo': 'Editar Ocorrência'})
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(eh_admin, login_url='/area-cliente/')
+def ocorrencia_deletar(request, id):
+    ocorrencia = get_object_or_404(Ocorrencia, id=id)
+    if request.method == 'POST':
+        ocorrencia.delete()
+        return redirect('ocorrencia_lista')
+    return render(request, 'core/cliente_confirmar_delete.html', {'objeto': ocorrencia.tipo, 'tipo': 'Ocorrência'})
 
 # -------------------------------------------------------------------
 # LOGOUT
