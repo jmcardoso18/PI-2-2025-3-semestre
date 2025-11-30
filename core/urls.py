@@ -6,7 +6,7 @@ from .views import (
     cliente_lista, cliente_novo, cliente_editar, cliente_deletar,
     evento_lista, evento_novo, evento_editar, evento_deletar,
     fornecedor_lista, fornecedor_novo, fornecedor_editar, fornecedor_deletar,
-    tarefa_lista, tarefa_nova, tarefa_editar, tarefa_deletar, atividade_lista, atividade_nova, atividade_editar, atividade_deletar, ocorrencia_lista, ocorrencia_nova, ocorrencia_editar, ocorrencia_deletar, servico_lista, servico_novo, servico_editar, servico_deletar, equipe_lista, equipe_nova, equipe_editar, equipe_deletar,
+    tarefa_lista, tarefa_nova, tarefa_editar, tarefa_deletar, atividade_lista, atividade_nova, atividade_editar, atividade_deletar, ocorrencia_lista, ocorrencia_nova, ocorrencia_editar, ocorrencia_deletar, servico_lista, servico_novo, servico_editar, servico_deletar, equipe_lista, equipe_nova, equipe_editar, equipe_deletar, meus_convidados, excluir_convidado,
     colaborador_area, colaborador_home, toggle_atividade, area_cliente, toggle_tarefa, logout_react
 )
 
@@ -78,6 +78,10 @@ urlpatterns = [
 
     # Rota da Área do Cliente
     path('area-cliente/', area_cliente, name='area_cliente'),
+
+    # Gestão de Convidados pelo Cliente
+    path('area-cliente/convidados/', meus_convidados, name='meus_convidados'),
+    path('area-cliente/convidados/excluir/<int:id>/', excluir_convidado, name='excluir_convidado'),
     
     # API para checkbox de tarefa
     path('api/toggle-tarefa/<int:id>/', toggle_tarefa, name='toggle_tarefa'),

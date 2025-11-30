@@ -3,16 +3,20 @@
 {% block content %}
 
     {% if not evento %}
-        <div class="flex flex-col items-center justify-center py-20 text-center">
-            <div class="h-24 w-24 bg-white rounded-full flex items-center justify-center shadow-sm mb-6 border border-neutral-100">
+        <div class="flex flex-col items-center justify-center min-h-[60vh] text-center">
+            <div class="h-24 w-24 bg-white rounded-full flex items-center justify-center shadow-sm mb-6 border border-neutral-200">
                 <span class="text-4xl">✨</span>
             </div>
-            <h1 class="font-display text-3xl text-neutral-900 mb-3">Bem-vindo(a), {{ usuario.first_name|default:usuario.username }}!</h1>
-            <p class="text-neutral-600 max-w-md mb-8">
-                Ainda não há eventos vinculados à sua conta. Entre em contato com a equipe para iniciar o planejamento do seu sonho.
+            <h1 class="font-display text-3xl sm:text-4xl text-neutral-900 mb-4">
+                Bem-vindo(a), {{ usuario.first_name|default:usuario.username }}!
+            </h1>
+            <p class="text-neutral-600 max-w-md mb-8 leading-relaxed">
+                Ainda não encontramos um evento vinculado ao seu cadastro. 
+                <br>
+                Entre em contato com nossa equipe para iniciarmos o planejamento do seu grande dia.
             </p>
-            <a href="https://wa.me/55XXXXXXXXXXX" target="_blank" class="bg-black text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-neutral-800 transition shadow-lg">
-                Falar com a Cerimonialista
+            <a href="https://wa.me/55XXXXXXXXXXX" target="_blank" class="inline-flex items-center gap-2 bg-black text-white px-8 py-3 rounded-full text-sm font-semibold hover:bg-neutral-800 transition shadow-lg hover:-translate-y-1">
+                <span>Falar com a Cerimonialista</span>
             </a>
         </div>
 
@@ -63,6 +67,12 @@
                         <div><p class="text-xs text-neutral-500 mb-0.5">Data</p><p class="font-medium">{{ evento.data|date:"d/m/Y" }}</p></div>
                         <div><p class="text-xs text-neutral-500 mb-0.5">Local</p><p class="font-medium">{{ evento.local }}</p></div>
                         <div><p class="text-xs text-neutral-500 mb-0.5">Estimativa</p><p class="font-medium">{{ evento.estimativa_convidados }}</p></div>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-neutral-100">
+                        <a href="{% url 'meus_convidados' %}" class="block w-full text-center bg-black text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-neutral-800 transition shadow-md">
+                            Gerenciar Lista de Convidados
+                        </a>
                     </div>
                 </div>
 
@@ -137,40 +147,40 @@
                 </div>
             </aside>
         </div>
-    {% endif %}
 
-{% endblock %}
+    {% endif %} {% endblock %}
 
 {% block scripts %}
-{% if evento %}
-<script>
-    const eventDate = new Date("{{ evento.data|date:'Y-m-d' }}T00:00:00");
+    {% if evento %}
+    <script>
+        // Scripts só rodam se tiver evento
+        const eventDate = new Date("{{ evento.data|date:'Y-m-d' }}T00:00:00");
 
-    function updateCountdown() {
-        const now = new Date();
-        const diff = eventDate - now;
-        if (diff <= 0) return;
+        function updateCountdown() {
+            const now = new Date();
+            const diff = eventDate - now;
+            if (diff <= 0) return;
 
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-        const minutes = Math.floor((diff / (1000 * 60)) % 60);
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((diff / (1000 * 60)) % 60);
 
-        document.getElementById("count-days").innerText = days;
-        document.getElementById("count-hours").innerText = hours;
-        document.getElementById("count-mins").innerText = minutes;
-        document.getElementById("days-text").innerText = days;
-    }
-    setInterval(updateCountdown, 1000 * 60);
-    updateCountdown();
+            document.getElementById("count-days").innerText = days;
+            document.getElementById("count-hours").innerText = hours;
+            document.getElementById("count-mins").innerText = minutes;
+            document.getElementById("days-text").innerText = days;
+        }
+        setInterval(updateCountdown, 1000 * 60);
+        updateCountdown();
 
-    function toggleTarefa(id) {
-        fetch(`/api/toggle-tarefa/${id}/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-        }).then(res => res.json()).then(data => {
-            if (data.status === 'sucesso') window.location.reload();
-        });
-    }
-</script>
-{% endif %}
+        function toggleTarefa(id) {
+            fetch(`/api/toggle-tarefa/${id}/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            }).then(res => res.json()).then(data => {
+                if (data.status === 'sucesso') window.location.reload();
+            });
+        }
+    </script>
+    {% endif %}
 {% endblock %}

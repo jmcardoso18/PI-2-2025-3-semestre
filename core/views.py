@@ -7,8 +7,8 @@ from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 
 # IMPORTS DOS SEUS MODELS E FORMS
-from .models import Evento, Servico, Usuario, Atividade, Convidado, Tarefa, Fornecedor, Ocorrencia, Servico
-from .forms import ClienteForm, EquipeForm, EventoForm, FornecedorForm, TarefaForm, AtividadeForm, OcorrenciaForm, ServicoForm
+from .models import Evento, Servico, Usuario, Atividade, Convidado, Tarefa, Fornecedor, Ocorrencia, Servico, Convidado
+from .forms import ClienteForm, EquipeForm, EventoForm, FornecedorForm, TarefaForm, AtividadeForm, OcorrenciaForm, ServicoForm, ConvidadoForm
 
 # --- FUNÇÕES AUXILIARES ---
 def eh_admin(user):
@@ -491,6 +491,57 @@ def toggle_tarefa(request, id):
         tarefa.save()
         return JsonResponse({'status': 'sucesso', 'feito': tarefa.feito})
     return JsonResponse({'error': 'Erro'}, status=400)
+
+# -------------------------------------------------------------------
+# CRUD DE CONVIDADOS
+# -------------------------------------------------------------------
+
+@login_required(login_url='/admin/login/')
+def meus_convidados(request):
+    # 1. Identifica o evento do cliente logado
+    try:
+        evento = Evento.objects.filter(usuario__email=request.user.email).first()
+    except:
+        return redirect('area_cliente')
+
+    if not evento:
+        return redirect('area_cliente')
+
+    # 2. Processa o Formulário de Adição
+    if request.method == 'POST':
+        form = ConvidadoForm(request.POST)
+        if form.is_valid():
+            convidado = form.save(commit=False)
+            convidado.evento = evento # Vincula automaticamente ao evento do cliente
+            convidado.save()
+            return redirect('meus_convidados')
+    else:
+        form = ConvidadoForm()
+
+    # 3. Lista os convidados existentes
+    convidados = evento.convidados.all().order_by('nome')
+    
+    # Cálculos rápidos
+    total_confirmados = convidados.filter(status='Confirmado').count()
+    total_pessoas = sum(c.acompanhantes + 1 for c in convidados) # Titular + Acompanhantes
+
+    context = {
+        'evento': evento,
+        'convidados': convidados,
+        'form': form,
+        'total_confirmados': total_confirmados,
+        'total_pessoas': total_pessoas
+    }
+    return render(request, 'core/meus_convidados.html', context)
+
+# View para excluir (caso o cliente errou)
+@login_required(login_url='/admin/login/')
+def excluir_convidado(request, id):
+    convidado = get_object_or_404(Convidado, id=id)
+    # Segurança: Garante que o convidado pertence a um evento do usuário logado
+    if convidado.evento.usuario.email == request.user.email:
+        convidado.delete()
+    return redirect('meus_convidados')
 
 # -------------------------------------------------------------------
 # CRUD DE ATIVIDADES (CRONOGRAMA)

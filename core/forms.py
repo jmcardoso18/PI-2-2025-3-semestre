@@ -1,6 +1,6 @@
 from django import forms
 from .models import Usuario
-from .models import Usuario, Evento, Fornecedor, Tarefa, Atividade, Ocorrencia, Servico
+from .models import Usuario, Evento, Fornecedor, Tarefa, Atividade, Ocorrencia, Servico, Convidado
 
 class ClienteForm(forms.ModelForm):
     class Meta:
@@ -234,4 +234,25 @@ class ServicoForm(forms.ModelForm):
                 'placeholder': 'Descreva o que está incluso no pacote...',
                 'rows': 5
             }),
+        }
+
+# ... imports ...
+
+class ConvidadoForm(forms.ModelForm):
+    class Meta:
+        model = Convidado
+        fields = ['nome', 'acompanhantes', 'status']
+        
+        widgets = {
+            'nome': forms.TextInput(attrs={
+                'class': 'w-full rounded-lg border-neutral-300 px-4 py-2 text-sm focus:border-black focus:ring-black shadow-sm',
+                'placeholder': 'Nome do Convidado'
+            }),
+            'acompanhantes': forms.NumberInput(attrs={
+                'class': 'w-full rounded-lg border-neutral-300 px-4 py-2 text-sm focus:border-black focus:ring-black shadow-sm',
+                'min': '0'
+            }),
+            'status': forms.Select(attrs={
+                'class': 'w-full rounded-lg border-neutral-300 bg-white px-4 py-2 text-sm focus:border-black focus:ring-black shadow-sm'
+            })
         }
