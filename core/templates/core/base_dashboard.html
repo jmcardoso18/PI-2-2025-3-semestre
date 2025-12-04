@@ -41,12 +41,12 @@
         </div>
     </header>
 
-    <div id="mobile-menu" class="hidden-menu fixed top-[57px] left-0 w-full md:w-96 bg-neutral-900 border-r border-b border-white/10 z-40 shadow-2xl p-6">
+    <div id="mobile-menu" class="hidden-menu fixed top-[57px] left-0 h-[calc(100vh-57px)] w-full md:w-80 bg-neutral-900 border-r border-white/10 z-40 shadow-2xl p-6 overflow-y-auto">
         
         {% if user.is_staff %}
             <h3 class="text-xs font-semibold uppercase tracking-[0.2em] text-white/40 mb-6">Menu de Gestão (Admin)</h3>
             
-            <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-3">
                 <a href="{% url 'cliente_lista' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition group">
                     <span class="text-xl group-hover:scale-110 transition">👥</span>
                     <span class="text-sm font-medium text-white/80 group-hover:text-white">Clientes</span>
@@ -63,18 +63,21 @@
                     <span class="text-xl group-hover:scale-110 transition">📝</span>
                     <span class="text-sm font-medium text-white/80 group-hover:text-white">Pendências</span>
                 </a>
-                
                 <a href="{% url 'atividade_lista' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition group">
-                    <span class="text-xl">⏰</span><span class="text-sm font-medium text-white/80">Atividades</span>
+                    <span class="text-xl group-hover:scale-110 transition">⏰</span>
+                    <span class="text-sm font-medium text-white/80 group-hover:text-white">Atividades</span>
                 </a>
                 <a href="{% url 'ocorrencia_lista' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition group">
-                    <span class="text-xl">⚠️</span><span class="text-sm font-medium text-white/80">Ocorrências</span>
+                    <span class="text-xl group-hover:scale-110 transition">⚠️</span>
+                    <span class="text-sm font-medium text-white/80 group-hover:text-white">Ocorrências</span>
                 </a>
                 <a href="{% url 'servico_lista' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition group">
-                    <span class="text-xl">💰</span><span class="text-sm font-medium text-white/80">Serviços</span>
+                    <span class="text-xl group-hover:scale-110 transition">💰</span>
+                    <span class="text-sm font-medium text-white/80 group-hover:text-white">Serviços</span>
                 </a>
                 <a href="{% url 'equipe_lista' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition group">
-                    <span class="text-xl">🔐</span><span class="text-sm font-medium text-white/80">Acessos</span>
+                    <span class="text-xl group-hover:scale-110 transition">🔐</span>
+                    <span class="text-sm font-medium text-white/80 group-hover:text-white">Acessos</span>
                 </a>
             </div>
 
