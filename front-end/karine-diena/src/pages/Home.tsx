@@ -76,7 +76,7 @@ const Home = () => {
                     <div className="md:col-span-2 mb-6">
                         <h2 className="font-display text-3xl md:text-4xl tracking-[0.25em] uppercase text-center">SOBRE</h2>
                     </div>
-                    <div className="space-y-4 text-sm sm:text-base leading-relaxed text-neutral-800">
+                    <div className="space-y-4 text-base sm:text-lg leading-relaxed text-neutral-800">
                         <p>Fundada em 2013, a Karine Cerimonialista é uma empresa especializada na organização e planejamento de eventos sociais e corporativos.</p>
                         <p>Com uma equipe qualificada e comprometida, desenvolvemos projetos sob medida para cada cliente, desde a concepção do sonho até a execução impecável.</p>
                         <p>Nosso compromisso é transformar momentos especiais em lembranças inesquecíveis.</p>
