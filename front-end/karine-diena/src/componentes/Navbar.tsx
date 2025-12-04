@@ -7,18 +7,23 @@ const Navbar = () => {
             <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
 
                 {/* LOGO */}
-                <Link
-                    to="/"
+                <HashLink
+                    smooth
+                    to="/#home"
                     className="font-display text-xl tracking-[0.25em] uppercase cursor-pointer hover:opacity-80 transition"
                 >
                     Karine Diena
-                </Link>
+                </HashLink>
 
                 {/* MENU */}
-                <nav className="flex gap-6 text-sm">
+                <nav className="flex items-center gap-6 text-sm">
 
                     <HashLink smooth to="/#home" className="hover:text-brand-200 transition">
-                        Página Inicial
+                        Inicio
+                    </HashLink>
+
+                    <HashLink smooth to="/#about" className="hover:text-brand-200 transition">
+                        Sobre
                     </HashLink>
 
                     <HashLink smooth to="/#services" className="hover:text-brand-200 transition">
